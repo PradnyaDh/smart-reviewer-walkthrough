@@ -1,0 +1,19 @@
+package-lock.json
+  s_4e4bd15b930ee5::t_87654fb50adeb1 1-287
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "d60ee905282867a02ea36ad312646d26649025a8",
+  "prompts": {},
+  "sessions": {
+    "s_4e4bd15b930ee5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f20963f2-c83d-4055-930b-7d93ef6ff580",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Pradnya Tukaram Shelar <pradnya.shelar@deliveryhero.com>"
+    }
+  }
+}
