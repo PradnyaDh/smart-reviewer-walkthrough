@@ -1,0 +1,38 @@
+name: "Smart Reviewer Walkthrough"
+description: "Posts an AI-generated PR walkthrough: 3-sentence summary, Mermaid data-flow diagram, and top risk lines to focus on."
+inputs:
+  github-token:
+    description: "Token used to read the diff and post/update the comment. Defaults to the workflow's GITHUB_TOKEN."
+    required: true
+    default: ${{ github.token }}
+  anthropic-api-key:
+    description: "Anthropic API key (store as a repo/org secret, e.g. ANTHROPIC_API_KEY)."
+    required: true
+  model:
+    description: "Claude model id to use."
+    required: false
+    default: "claude-sonnet-5"
+  max-diff-chars:
+    description: "Max characters of diff sent to the model, to bound context/cost on very large PRs."
+    required: false
+    default: "60000"
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: "20"
+    - name: Install dependencies
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: npm ci --omit=dev
+    - name: Generate and post walkthrough
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: node src/index.mjs
+      env:
+        INPUT_GITHUB-TOKEN: ${{ inputs.github-token }}
+        INPUT_ANTHROPIC-API-KEY: ${{ inputs.anthropic-api-key }}
+        INPUT_MODEL: ${{ inputs.model }}
+        INPUT_MAX-DIFF-CHARS: ${{ inputs.max-diff-chars }}

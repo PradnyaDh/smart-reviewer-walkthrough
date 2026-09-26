@@ -1,0 +1,23 @@
+name: Smart Reviewer Walkthrough
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: smart-reviewer-walkthrough-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  walkthrough:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./smart-reviewer-walkthrough
+        with:
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
