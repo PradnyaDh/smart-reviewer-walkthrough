@@ -1,0 +1,21 @@
+README.md
+  s_4e4bd15b930ee5::t_664859c227c9c2 20-33
+examples/consumer-workflow.yml
+  s_4e4bd15b930ee5::t_71116809b9411a 1-25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "351a23d1bb5702a294b8ef9c49433ee36cffb1f1",
+  "prompts": {},
+  "sessions": {
+    "s_4e4bd15b930ee5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f20963f2-c83d-4055-930b-7d93ef6ff580",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Pradnya Tukaram Shelar <pradnya.shelar@deliveryhero.com>"
+    }
+  }
+}
