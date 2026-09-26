@@ -1,0 +1,25 @@
+# Copy this file to .github/workflows/smart-reviewer-walkthrough.yml in any repo
+# where you want the walkthrough posted. Requires an ANTHROPIC_API_KEY secret
+# on that repo (or inherited from an org secret).
+
+name: Smart Reviewer Walkthrough
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: smart-reviewer-walkthrough-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  walkthrough:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: PradnyaDh/smart-reviewer-walkthrough@main
+        with:
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}

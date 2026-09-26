@@ -17,14 +17,20 @@ and updated in place), so a `synchronize` push updates the existing comment inst
 
 ## Setup in a target repo
 
-1. Copy this `smart-reviewer-walkthrough/` folder into the root of the repo you want it to run in
-   (or reference it from another repo via a Git submodule / by publishing it separately — the action
-   is self-contained).
-2. Add a repo or org secret named `ANTHROPIC_API_KEY` with a valid Anthropic API key
-   (Settings → Secrets and variables → Actions).
-3. The included workflow at `.github/workflows/smart-reviewer-walkthrough.yml` is ready to run as-is —
-   no edits needed unless you want to change the model or the diff size cap.
-4. Open a PR. The bot comment should appear within a minute or two of the workflow running.
+This repo is published standalone, so other repos reference it as an external action —
+no need to copy files around.
+
+1. Add a repo or org secret named `ANTHROPIC_API_KEY` with a valid Anthropic API key
+   (Settings → Secrets and variables → Actions) on the **target** repo (the one whose PRs
+   you want walkthroughs on).
+2. Copy [`examples/consumer-workflow.yml`](examples/consumer-workflow.yml) into that repo at
+   `.github/workflows/smart-reviewer-walkthrough.yml`. It references this action as
+   `PradnyaDh/smart-reviewer-walkthrough@main`.
+3. Open a PR on the target repo. The bot comment should appear within a minute or two of the
+   workflow running.
+
+(The workflow committed in *this* repo at `.github/workflows/smart-reviewer-walkthrough.yml` uses
+the local `./` path instead, so this repo dogfoods the action on its own PRs.)
 
 ## Configuration
 
