@@ -1,81 +1,198 @@
-# Smart Reviewer Walkthrough
+# 🧭 Smart Reviewer Walkthrough
 
-A GitHub Action that posts a "Smart Reviewer Walkthrough" as a PR comment: a 3-sentence plain-English
-summary, a Mermaid data-flow diagram, and a "Focus Your Eyes Here" list of the top 1-3 lines with a
-genuine race-condition / null / error-handling risk. The comment is upserted (found by a hidden marker
-and updated in place), so a `synchronize` push updates the existing comment instead of piling up new ones.
+An AI-assisted code review engine and GitHub Action built on a **3-Layer Architecture** (Team Memory, Analysis Swarm, and Deterministic Risk Routing). Designed for Engineering Managers (EMs) and senior reviewers, it provides rapid 60-second PR orientation, maps architecture and blast radius across unfamiliar codebases, flags runtime failure modes, and certifies safe paths without replacing human accountability.
 
-## How it works
-
-1. On `pull_request` (`opened` / `synchronize` / `reopened`), the action fetches the PR's per-file
-   patches via the GitHub API (`GET /pulls/{n}/files`), capped at `max-diff-chars` total so a huge PR
-   doesn't blow context or cost.
-2. It calls the Claude API (`src/claude.mjs`) with a forced tool call (`tool_choice`), so the model's
-   response is guaranteed structured JSON — no regex-scraping prose out of a free-text reply.
-3. It formats that JSON into markdown (`src/format.mjs`) and creates or updates the PR comment
-   (`src/index.mjs`).
-
-## Setup in a target repo
-
-This repo is published standalone, so other repos reference it as an external action —
-no need to copy files around.
-
-1. Add a repo or org secret named `ANTHROPIC_API_KEY` with a valid Anthropic API key
-   (Settings → Secrets and variables → Actions) on the **target** repo (the one whose PRs
-   you want walkthroughs on).
-2. Copy [`examples/consumer-workflow.yml`](examples/consumer-workflow.yml) into that repo at
-   `.github/workflows/smart-reviewer-walkthrough.yml`. It references this action as
-   `PradnyaDh/smart-reviewer-walkthrough@main`.
-3. Open a PR on the target repo. The bot comment should appear within a minute or two of the
-   workflow running.
-
-(The workflow committed in *this* repo at `.github/workflows/smart-reviewer-walkthrough.yml` uses
-the local `./` path instead, so this repo dogfoods the action on its own PRs.)
-
-## Running locally against any repo
-
-`scripts/cli.mjs` runs the same logic (diff → model → format) outside of GitHub Actions
-entirely — useful for testing against a real PR before wiring up CI, or for one-off use
-without a workflow at all.
-
-```bash
-npm install
-
-# Dry run: prints the walkthrough, doesn't touch GitHub
-ANTHROPIC_API_KEY=sk-ant-... node scripts/cli.mjs owner/repo 123
-
-# Through an internal gateway, with a specific model
-ANTHROPIC_API_KEY=cloudflare ANTHROPIC_BASE_URL=http://localhost:36253 \
-  node scripts/cli.mjs owner/repo 123 --model gemini-3-5-flash
-
-# Actually post/update the comment on the PR
-ANTHROPIC_API_KEY=sk-ant-... node scripts/cli.mjs owner/repo 123 --post
+```
+                          ┌────────────────────────┐
+                          │   Pull Request (Diff)  │
+                          └───────────┬────────────┘
+                                      │
+              ┌───────────────────────▼────────────────────────┐
+              │  LAYER 3: Risk Router & Deterministic Gate     │
+              │  • Diff Size (>500 LoC / >20 files)            │
+              │  • Sensitive Deny-List (pricing, auth, schema) │
+              │  • Fast-Path vs. Escalate-to-Human Verdict     │
+              └───────────────────────┬────────────────────────┘
+                                      │
+              ┌───────────────────────▼────────────────────────┐
+              │  LAYER 1: Team Memory (Context Injector)       │
+              │  • Scoped AGENTS.md / CLAUDE.md                │
+              │  • Per-service rules (.claude/pr-rules/*.md)   │
+              │  • Invariant "Do-Not-Touch" Constraints        │
+              └───────────────────────┬────────────────────────┘
+                                      │
+              ┌───────────────────────▼────────────────────────┐
+              │  LAYER 2: Review Swarm (Analysis Engine)       │
+              │  • Architectural Flow (Mermaid Diagram)        │
+              │  • Failure Modes (Race conditions, null checks)│
+              │  • "Verified" Section (What NOT to re-check)   │
+              └───────────────────────┬────────────────────────┘
+                                      │
+              ┌───────────────────────▼────────────────────────┐
+              │  OUTPUT: Structured Verdict & Compounding Loop │
+              │  • Blocking / Should Fix / Verified            │
+              │  • Candidate Rule Proposal for AGENTS.md       │
+              └────────────────────────────────────────────────┘
 ```
 
-It picks up your GitHub token from `gh auth token` automatically (falls back to
-`GH_TOKEN`/`GITHUB_TOKEN` env vars), so it works against any repo your `gh` CLI already
-has access to — no need for this action's own GitHub App/connector permissions.
-Run `node scripts/cli.mjs --help` for the full option list.
+---
 
-## Configuration
+## 🏛️ The Three Architectural Layers
 
-All inputs are optional except the API key:
+### 1. Layer 1: Codified Team Memory (`src/context.mjs`)
+* Dynamically inspects the PR's touched file paths and queries the GitHub Contents API for `AGENTS.md`, `CLAUDE.md`, or scoped `.claude/pr-rules/*.md` files without requiring a local checkout.
+* The model reviews against **actual codebase conventions, anti-patterns, and deprecated paths** rather than generic lint advice.
+* Transparently displays loaded context files in the review footer.
 
-| Input | Default | Purpose |
-|---|---|---|
-| `model` | `claude-sonnet-5` | Claude model id |
-| `max-diff-chars` | `60000` | Diff characters sent to the model before truncating (oversized files/diffs are noted, not silently dropped) |
-| `github-token` | `${{ github.token }}` | Override only if you need elevated permissions (e.g. to comment across forks) |
-| `anthropic-base-url` | `https://api.anthropic.com` | Point at an internal Anthropic-compatible gateway instead (e.g. an internal LiteLLM proxy). **Must be reachable from the GitHub Actions runner** — a `localhost` address from someone's laptop will not work from a cloud-hosted runner; you need the gateway's real network-reachable endpoint. If your org runs GitHub Actions on self-hosted runners inside the corporate network, that runner may reach the same internal address your local dev setup uses. |
-| `cf-access-client-id` / `cf-access-client-secret` | unset | Only needed if the gateway above sits behind Cloudflare Access (Zero Trust) and requires a service token for non-interactive callers like a CI job |
+### 2. Layer 2: Analysis Swarm & Structured Verdict (`src/prompt.mjs`, `src/format.mjs`)
+Replaces flat risk lists with a structured engineering taxonomy:
+* **🏛️ Repository Context (EM Lens):** Explains what the service does, its platform tier, critical dependencies, and high-level blast radius for managers reviewing unfamiliar code.
+* **📝 3-Sentence Summary:** Plain-English synthesis: *What changed*, *Why*, and *The single biggest catch for the reviewer*.
+* **🗺️ Data Flow Diagram:** Clean, native Mermaid (`flowchart TD`) diagrams with automated syntax sanitization (double-quoted labels for method calls with parentheses or colons).
+* **🚫 Blocking:** Real race conditions, reflection/lambda arity mismatches, or invariant violations that must prevent merging.
+* **⚠️ Should Fix:** Code quality issues, missing timeouts, or unhandled errors to address before release.
+* **💡 Nice to Have:** Optional polish suggestions (e.g. using `emptyMap()` vs `mutableMapOf()`).
+* **✅ Verified (Skip Manual Re-Checking):** **Highest leverage section for human reviewers.** Explicitly certifies what was checked and confirmed safe so the reviewer doesn't waste time re-checking it.
+* **📝 Suggested Rule Additions (Compounding Loop):** When the reviewer catches a new pattern, it drafts a 1-sentence rule to commit to `AGENTS.md`, compounding team judgment over time.
 
-## Notes / limitations
+### 3. Layer 3: Deterministic Risk Router & Gate (`src/router.mjs`)
+Modeled after PostHog's *StampHog* and Morgan Stanley's *DDRA*:
+* Runs **before calling any LLM** to save cost and enforce hard invariants.
+* Evaluates diff size ceilings (<150 lines for fast-path; >500 lines or >20 files for escalation).
+* Screens against a sensitive blast-radius deny-list: `pricing`, `billing`, `fee`, `auth`, `secret`, `migration`, `schema`, `public-api`, `ingress`.
+* Outputs a deterministic gate verdict: `🟢 LOW RISK (FAST_PATH)`, `🟡 MEDIUM RISK`, or `🔴 HIGH RISK (ESCALATE_HUMAN)`.
 
-- **Fork PRs**: `pull_request` (not `pull_request_target`) is used deliberately — it never exposes
-  `ANTHROPIC_API_KEY` to a fork's untrusted workflow code. The tradeoff: the default `GITHUB_TOKEN` on a
-  fork PR is read-only, so the bot comment won't post on PRs from forks unless you consciously switch to
-  `pull_request_target` (which changes the trust model — read GitHub's docs on that before doing so).
-- Binary files and files GitHub itself won't diff (huge single-file changes) are skipped and named in
-  the comment rather than silently ignored.
-- This is an assistive first-pass, not a substitute for human review — the comment says so, and the
-  risk list is intentionally allowed to come back empty rather than padded with generic advice.
+---
+
+## 💻 Running Locally via CLI (`scripts/cli.mjs`)
+
+You can run reviews against any GitHub repository your `gh` CLI has access to without modifying the target repository.
+
+### Prerequisites
+```bash
+npm install
+```
+
+### 1. Single Model Review (Dry Run)
+Prints the review directly to your terminal:
+```bash
+export ANTHROPIC_API_KEY="cloudflare"
+export ANTHROPIC_BASE_URL="http://localhost:36253"
+
+node scripts/cli.mjs deliveryhero/logistics-dynamic-pricing 842 --model gemini-3-5-flash
+```
+
+### 2. Multi-Model Benchmark Comparison (`--compare`)
+Evaluates the PR simultaneously across **GPT-5**, **Gemini 2.5 Pro**, and **Gemini 3.5 Flash**:
+```bash
+node scripts/cli.mjs deliveryhero/logistics-dynamic-pricing 842 --compare
+```
+
+### 3. Post to Your Personal Review Tracker (`--post-issue`)
+Instead of commenting on the author's PR or spamming the production repository, save the review as an **Issue in your personal tracking repo**:
+```bash
+# Creates a new review issue in your tracking repo:
+node scripts/cli.mjs deliveryhero/logistics-dynamic-pricing 842 \
+  --compare \
+  --post-issue PradnyaDh/smart-reviewer-walkthrough
+
+# Refresh / update an existing issue with new findings:
+node scripts/cli.mjs deliveryhero/logistics-dynamic-pricing 842 \
+  --compare \
+  --post-issue PradnyaDh/smart-reviewer-walkthrough \
+  --issue-number 3
+```
+
+### 4. Post Directly to the Target PR (`--post`)
+Updates the PR comment in-place on the author's pull request:
+```bash
+node scripts/cli.mjs owner/repo 123 --model gemini-3-5-flash --post
+```
+
+---
+
+## 🤖 Supported Models & Gateways
+
+The engine uses an Anthropic-compatible tool-calling interface (`/v1/messages`) with automatic response fallbacks. It seamlessly supports:
+
+| Provider / Model | Recommended Use Case | Performance |
+| :--- | :--- | :--- |
+| **`gpt-5`** | Complex concurrency, deep race condition analysis, and type systems. | ~6–8s (Deep reasoning) |
+| **`gemini-2-5-pro`** | Architectural overviews, clean Mermaid diagrams, and business risk. | ~3–4s (Frontier reasoning) |
+| **`gemini-3-5-flash`** | CI/CD automation, unit test bug hunting, and ultra-fast orientation. | **~1.2s (Fastest)** |
+| **`claude-3-5-sonnet`** | Direct Anthropic API (`api.anthropic.com`) via `sk-ant-...` key. | ~2–3s |
+
+---
+
+## ⚙️ CLI Reference (`scripts/cli.mjs`)
+
+| Option | Description |
+| :--- | :--- |
+| `<owner/repo> <pr-number>` | Target repository and Pull Request number (positional). |
+| `--model <id>` | Model identifier (defaults to `gemini-3-5-flash` or `$TEST_MODEL`). |
+| `--compare` | Evaluates all 3 top models (`gpt-5`, `gemini-2-5-pro`, `gemini-3-5-flash`) side-by-side. |
+| `--models <m1,m2>` | Custom comma-separated list of models to benchmark. |
+| `--post-issue <owner/repo>`| Posts the formatted review to a personal tracking repository as a GitHub Issue. |
+| `--issue-number <num>` | Updates an existing GitHub issue number instead of creating a duplicate. |
+| `--post` | Creates or updates the review comment on the source PR. |
+| `--max-diff-chars <n>` | Maximum diff characters sent to LLM before truncation (default: `60000`). |
+
+---
+
+## 🛠️ GitHub Action Setup (Target Repositories)
+
+To run automatically in CI on pull requests:
+
+1. Add your API key or gateway token as a secret named `ANTHROPIC_API_KEY` in the repository settings.
+2. Add `.github/workflows/smart-reviewer-walkthrough.yml`:
+
+```yaml
+name: Smart Reviewer Walkthrough
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  walkthrough:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Run Smart Reviewer
+        uses: PradnyaDh/smart-reviewer-walkthrough@main
+        with:
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: "gemini-3-5-flash"
+```
+
+---
+
+## 📚 Codifying Team Memory (`AGENTS.md`)
+
+To make the reviewer aware of your team's specific standards, place an `AGENTS.md` file in the root of your repository (or in subdirectories):
+
+```markdown
+# AGENTS.md — Team Memory
+
+## Shared Resources — Check Before Building
+- Feature flags: Use `FeaturesWithFriends` client, never invent local toggle singletons.
+- Metrics: Wrap DB and external calls in `metricsCollector.observe {}`.
+
+## Architecture Rules
+- All new pricing endpoints must define a fallback flat-pricing strategy.
+- Cache stores must use thread-safe collections (`ConcurrentHashMap`).
+
+## Do-Not-Touch Without Approval
+- `public/src/main/kotlin/.../pricing/` — Delivery fee core calculations.
+- `src/main/resources/db/migration/` — Flyway database schemas.
+```
+
+---
+
+## 🛡️ Non-Negotiable Core Invariants
+
+1. **AI Never Has Final Approval:** The tool provides first-pass analysis, verified safe lists, and risk ratings; a human engineer is always accountable for approving and merging code.
+2. **Fail Closed:** Any API timeout or syntax ambiguity results in an escalation recommendation, never silent approval.
+3. **The Compounding Habit:** Every time a human reviewer catches a defect missed by the tool, it is converted into a 1-sentence bullet in `AGENTS.md` or `.claude/pr-rules/common.md`.
