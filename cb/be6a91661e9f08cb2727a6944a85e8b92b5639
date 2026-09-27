@@ -1,0 +1,22 @@
+scripts/batch-review.mjs
+  s_6941d5f8136cbe::t_c380364785c906 9-12,18-20,26-27,38-39,57-58,67,71-72,83,193-203,314-348
+  s_6941d5f8136cbe::t_f74d0d1014a8c2 349
+web/index.html
+  s_6941d5f8136cbe::t_9659ed6c0729fc 1-790
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "cbbe6a91661e9f08cb2727a6944a85e8b92b5639",
+  "prompts": {},
+  "sessions": {
+    "s_6941d5f8136cbe": {
+      "agent_id": {
+        "tool": "gemini",
+        "id": "75797c3d-2841-4596-b24b-7abb7e1b4406",
+        "model": "gemini-3.5-flash"
+      },
+      "human_author": "Pradnya Tukaram Shelar <pradnya.shelar@deliveryhero.com>"
+    }
+  }
+}
