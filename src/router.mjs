@@ -6,7 +6,7 @@
 // before calling LLMs.
 
 const DENY_LIST_PATTERNS = [
-  { category: "Pricing & Billing", regex: /(?:pricing|billing|fee|payment|invoice|campaign.*capping|currency)/i },
+  { category: "Core Pricing & Fees", regex: /(?:pricing|fee|payment|campaign.*capping|currency)/i },
   { category: "Security & Auth", regex: /(?:auth|secret|token|credential|session|\.env|password|key)/i },
   { category: "Database & Schema", regex: /(?:migration|schema|flyway|liquibase|\.sql)/i },
   { category: "Public API & Gateway", regex: /(?:public-api|\/api\/v\d+\/|ingress|envoy|contour)/i },

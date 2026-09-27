@@ -394,7 +394,7 @@
       <span style="font-size: 1.5rem;">🧭</span>
       <div>
         <h1>Smart Reviewer Standup Board</h1>
-        <div style="font-size: 0.75rem; color: var(--text-muted);">Engineering Manager PR Triage & Command Center</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">Tech Lead & Engineer PR Triage Command Center</div>
       </div>
       <span class="repo-pill" id="repoPill">deliveryhero/logistics-dynamic-pricing</span>
     </div>
@@ -469,7 +469,7 @@
       </div>
 
       <div class="modal-section" id="modalEMSection">
-        <h3>🏛️ EM Architectural Context & Blast Radius</h3>
+        <h3>🏛️ Repository & Architectural Context</h3>
         <div id="modalEMText" style="font-size: 0.9rem; line-height: 1.5; color: #cbd5e1;"></div>
       </div>
 
@@ -526,7 +526,7 @@
             url: "https://github.com/deliveryhero/logistics-dynamic-pricing/pull/3264",
             totalLines: 868,
             fileCount: 22,
-            risk: { riskLevel: "HIGH", recommendation: "ESCALATE_HUMAN", sensitiveCategories: ["Pricing & Billing"], reasons: ["Touches sensitive path(s): Pricing & Billing", "Diff exceeds standard threshold: 868 lines"] },
+            risk: { riskLevel: "HIGH", recommendation: "ESCALATE_HUMAN", sensitiveCategories: ["Core Pricing & Fees"], reasons: ["Touches sensitive path(s): Core Pricing & Fees", "Diff exceeds standard threshold: 868 lines"] },
             routing: { reviewers: ["@deliveryhero/dps-workspace", "@deliveryhero/dps-api", "@deliveryhero/dps-optimization"], source: "CODEOWNERS" },
             aiReview: {
               summary: "This pull request adds Slack webhook alerts for Time-of-Day pricing optimization runs. It notifies the operations team when batch runs complete or encounter optimization solver errors. Reviewers should ensure that Slack notification rate limits are handled gracefully without blocking optimization jobs.",
@@ -542,7 +542,7 @@
             url: "https://github.com/deliveryhero/logistics-dynamic-pricing/pull/3303",
             totalLines: 4,
             fileCount: 3,
-            risk: { riskLevel: "HIGH", recommendation: "ESCALATE_HUMAN", sensitiveCategories: ["Pricing & Billing"], reasons: ["Touches sensitive path(s): Pricing & Billing", "PR is currently marked as DRAFT"] },
+            risk: { riskLevel: "HIGH", recommendation: "ESCALATE_HUMAN", sensitiveCategories: ["Core Pricing & Fees"], reasons: ["Touches sensitive path(s): Core Pricing & Fees", "PR is currently marked as DRAFT"] },
             routing: { reviewers: ["@deliveryhero/dps-workspace", "@deliveryhero/dps-api"], source: "CODEOWNERS" },
             aiReview: {
               summary: "Adds the has_subscription boolean flag to the outgoing Kafka order share payload. Enables downstream optimization models to differentiate between subscription orders and standard orders. Reviewers should check protobuf backwards-compatibility.",
@@ -574,7 +574,7 @@
             url: "https://github.com/deliveryhero/logistics-dynamic-pricing/pull/3269",
             totalLines: 106,
             fileCount: 5,
-            risk: { riskLevel: "HIGH", recommendation: "ESCALATE_HUMAN", sensitiveCategories: ["Pricing & Billing"], reasons: ["Touches sensitive path(s): Pricing & Billing"] },
+            risk: { riskLevel: "HIGH", recommendation: "ESCALATE_HUMAN", sensitiveCategories: ["Core Pricing & Fees"], reasons: ["Touches sensitive path(s): Core Pricing & Fees"] },
             routing: { reviewers: ["@deliveryhero/dps-workspace", "@deliveryhero/dps-api"], source: "CODEOWNERS" },
             aiReview: {
               summary: "Optimizes FwF feature flag evaluations by caching the VendorPortalIntegration flag for the entire run. Eliminates repeated network calls to Features-with-Friends across thousands of vendor groups. Reviewers should confirm flag value cannot drift mid-execution.",
@@ -590,7 +590,7 @@
             url: "https://github.com/deliveryhero/logistics-dynamic-pricing/pull/3265",
             totalLines: 329,
             fileCount: 6,
-            risk: { riskLevel: "HIGH", recommendation: "ESCALATE_HUMAN", sensitiveCategories: ["Pricing & Billing"], reasons: ["Touches sensitive path(s): Pricing & Billing"] },
+            risk: { riskLevel: "HIGH", recommendation: "ESCALATE_HUMAN", sensitiveCategories: ["Core Pricing & Fees"], reasons: ["Touches sensitive path(s): Core Pricing & Fees"] },
             routing: { reviewers: ["@deliveryhero/dps-workspace", "@deliveryhero/dps-api"], source: "CODEOWNERS" },
             aiReview: {
               summary: "Ensures pricing audit logs are not erroneously committed to the database if the main transaction rolls back. Fixes discrepancy where orders that failed checkout still showed simulated pricing records in analytics. Critical database integrity fix.",

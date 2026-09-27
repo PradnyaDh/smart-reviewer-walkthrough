@@ -42,12 +42,12 @@ export function formatComment({ walkthrough, model, riskEvaluation, teamMemory, 
     "",
   ];
 
-  // 1. EM Repository Context
+  // 1. Repository Architectural Context
   if (repoContext) {
     lines.push(
-      "### 🏛️ Repository Context for EM Review",
+      "### 🏛️ Repository & Architectural Context",
       `* **Architectural Role:** ${repoContext.architectural_role}`,
-      `* **EM Strategic Risk Lens:** ${repoContext.em_strategic_lens}`,
+      `* **Operational & Risk Lens:** ${repoContext.em_strategic_lens}`,
       "",
       "---",
       ""

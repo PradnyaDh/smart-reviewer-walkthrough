@@ -1,6 +1,6 @@
 # 🧭 Smart Reviewer Walkthrough
 
-An AI-assisted code review engine and GitHub Action built on a **3-Layer Architecture** (Team Memory, Analysis Swarm, and Deterministic Risk Routing). Designed for Engineering Managers (EMs) and senior reviewers, it provides rapid 60-second PR orientation, maps architecture and blast radius across unfamiliar codebases, flags runtime failure modes, and certifies safe paths without replacing human accountability.
+An AI-assisted code review engine and GitHub Action built on a **3-Layer Architecture** (Team Memory, Analysis Swarm, and Deterministic Risk Routing). Designed for Tech Leads, Senior Engineers, and Developers, it provides rapid 60-second PR orientation, maps architecture and blast radius across unfamiliar codebases, flags runtime failure modes, and certifies safe paths without replacing human accountability.
 
 ```
                           ┌────────────────────────┐
@@ -46,7 +46,7 @@ An AI-assisted code review engine and GitHub Action built on a **3-Layer Archite
 
 ### 2. Layer 2: Analysis Swarm & Structured Verdict (`src/prompt.mjs`, `src/format.mjs`)
 Replaces flat risk lists with a structured engineering taxonomy:
-* **🏛️ Repository Context (EM Lens):** Explains what the service does, its platform tier, critical dependencies, and high-level blast radius for managers reviewing unfamiliar code.
+* **🏛️ Repository & Architectural Context:** Explains what the service does, its platform tier, critical dependencies, and high-level blast radius for reviewers evaluating unfamiliar code.
 * **📝 3-Sentence Summary:** Plain-English synthesis: *What changed*, *Why*, and *The single biggest catch for the reviewer*.
 * **🗺️ Data Flow Diagram:** Clean, native Mermaid (`flowchart TD`) diagrams with automated syntax sanitization (double-quoted labels for method calls with parentheses or colons).
 * **🚫 Blocking:** Real race conditions, reflection/lambda arity mismatches, or invariant violations that must prevent merging.
@@ -59,7 +59,7 @@ Replaces flat risk lists with a structured engineering taxonomy:
 Modeled after PostHog's *StampHog* and Morgan Stanley's *DDRA*:
 * Runs **before calling any LLM** to save cost and enforce hard invariants.
 * Evaluates diff size ceilings (<150 lines for fast-path; >500 lines or >20 files for escalation).
-* Screens against a sensitive blast-radius deny-list: `pricing`, `billing`, `fee`, `auth`, `secret`, `migration`, `schema`, `public-api`, `ingress`.
+* Screens against a sensitive blast-radius deny-list: `pricing`, `fee`, `auth`, `secret`, `migration`, `schema`, `public-api`, `ingress`.
 * Outputs a deterministic gate verdict: `🟢 LOW RISK (FAST_PATH)`, `🟡 MEDIUM RISK`, or `🔴 HIGH RISK (ESCALATE_HUMAN)`.
 
 ---
@@ -89,7 +89,7 @@ node scripts/cli.mjs deliveryhero/logistics-dynamic-pricing 842 --compare
 ```
 
 ### 3. Post to Your Personal Review Tracker (`--post-issue`)
-Instead of commenting on the author's PR or spamming the production repository, save the review as an **Issue in your personal tracking repo**:
+Instead of commenting on the author's PR or modifying the target repository, save the review as an **Issue in your personal tracking repo**:
 ```bash
 # Creates a new review issue in your tracking repo:
 node scripts/cli.mjs deliveryhero/logistics-dynamic-pricing 842 \
@@ -113,7 +113,7 @@ node scripts/cli.mjs owner/repo 123 --model gemini-3-5-flash --post
 
 ## 📊 Sprint PR Triage & Batch Scanner (`scripts/batch-review.mjs`)
 
-For Engineering Managers running sprint planning or daily PR standups, `scripts/batch-review.mjs` scans all open PRs across a target repository, runs deterministic risk screening, matches **CODEOWNERS**, and compiles an **Executive Triage Matrix**:
+For engineers and Tech Leads conducting sprint planning or daily PR triage, `scripts/batch-review.mjs` scans all open PRs across a target repository, runs deterministic risk screening, matches **CODEOWNERS**, and compiles a **PR Triage Matrix**:
 
 ```bash
 # Fast triage of top 10 open PRs across the repository:
@@ -127,12 +127,15 @@ node scripts/batch-review.mjs deliveryhero/logistics-dynamic-pricing \
 # Full AI scan on all open PRs (generates 3-sentence summaries for all):
 node scripts/batch-review.mjs deliveryhero/logistics-dynamic-pricing \
   --limit 10 --full-ai --model gemini-3-5-flash
+
+# Launch the interactive local Web Dashboard at http://localhost:8787:
+node scripts/batch-review.mjs deliveryhero/logistics-dynamic-pricing --limit 10 --web
 ```
 
 The generated dashboard sorts PRs into:
 * 🟢 **Fast-Track Candidates:** Non-sensitive, compact diffs ready for rapid sign-off.
 * 🟡 **Standard Reviews:** Routine features and non-blocking updates.
-* 🔴 **High Blast-Radius:** Flags touching pricing, billing, auth, migrations, or large diffs with recommended reviewer squads automatically resolved from `CODEOWNERS` or git history.
+* 🔴 **High Blast-Radius:** Flags touching pricing, core calculations, auth, migrations, or large diffs with recommended reviewer squads automatically resolved from `CODEOWNERS` or git history.
 
 ---
 

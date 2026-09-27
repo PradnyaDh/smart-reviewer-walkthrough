@@ -15,32 +15,32 @@
       "totalLinesChanged": 868,
       "fileCount": 22,
       "sensitiveCategories": [
-        "Pricing & Billing"
+        "Core Pricing & Fees"
       ],
       "flaggedFiles": [
         {
           "file": "admin/src/main/kotlin/com/deliveryhero/dynamicpricing/common/slack/SlackWebhookClient.kt",
-          "category": "Pricing & Billing"
+          "category": "Core Pricing & Fees"
         },
         {
           "file": "admin/src/main/kotlin/com/deliveryhero/dynamicpricing/common/slack/SlackWebhookClientConfig.kt",
-          "category": "Pricing & Billing"
+          "category": "Core Pricing & Fees"
         },
         {
           "file": "admin/src/main/kotlin/com/deliveryhero/dynamicpricing/common/slack/SlackWebhookClientProperties.kt",
-          "category": "Pricing & Billing"
+          "category": "Core Pricing & Fees"
         },
         {
           "file": "admin/src/main/kotlin/com/deliveryhero/dynamicpricing/experiment/TodOptimizerRunStatusConverter.kt",
-          "category": "Pricing & Billing"
+          "category": "Core Pricing & Fees"
         },
         {
           "file": "admin/src/main/kotlin/com/deliveryhero/dynamicpricing/experiment/contracts/input/Segmentation.kt",
-          "category": "Pricing & Billing"
+          "category": "Core Pricing & Fees"
         }
       ],
       "reasons": [
-        "Touches sensitive path(s): Pricing & Billing",
+        "Touches sensitive path(s): Core Pricing & Fees",
         "Diff exceeds standard threshold: 868 lines changed across 22 files"
       ]
     },
@@ -117,20 +117,20 @@
       "totalLinesChanged": 4,
       "fileCount": 3,
       "sensitiveCategories": [
-        "Pricing & Billing"
+        "Core Pricing & Fees"
       ],
       "flaggedFiles": [
         {
           "file": "admin/src/main/kotlin/com/deliveryhero/dynamicpricing/automaticassignment/optimization/OptimizationService.kt",
-          "category": "Pricing & Billing"
+          "category": "Core Pricing & Fees"
         },
         {
           "file": "admin/src/main/kotlin/com/deliveryhero/dynamicpricing/automaticassignment/optimization/contract/common/OrderFilters.kt",
-          "category": "Pricing & Billing"
+          "category": "Core Pricing & Fees"
         }
       ],
       "reasons": [
-        "Touches sensitive path(s): Pricing & Billing",
+        "Touches sensitive path(s): Core Pricing & Fees",
         "PR is currently marked as DRAFT"
       ]
     },
@@ -240,28 +240,28 @@
       "totalLinesChanged": 106,
       "fileCount": 5,
       "sensitiveCategories": [
-        "Pricing & Billing"
+        "Core Pricing & Fees"
       ],
       "flaggedFiles": [
         {
           "file": "jobs/src/main/kotlin/com/deliveryhero/dynamicpricing/vendor/group/VendorGroupingService.kt",
-          "category": "Pricing & Billing"
+          "category": "Core Pricing & Fees"
         },
         {
           "file": "jobs/src/test/kotlin/com/deliveryhero/dynamicpricing/vendor/group/VendorGroupServiceTest.kt",
-          "category": "Pricing & Billing"
+          "category": "Core Pricing & Fees"
         },
         {
           "file": "jobs/src/test/kotlin/com/deliveryhero/dynamicpricing/vendorportal/flows/HSCampaignSubscriptionOptInOutIT.kt",
-          "category": "Pricing & Billing"
+          "category": "Core Pricing & Fees"
         },
         {
           "file": "jobs/src/test/kotlin/com/deliveryhero/dynamicpricing/vendorportal/flows/MarketingCampaignVendorGroupingOutboxIT.kt",
-          "category": "Pricing & Billing"
+          "category": "Core Pricing & Fees"
         }
       ],
       "reasons": [
-        "Touches sensitive path(s): Pricing & Billing"
+        "Touches sensitive path(s): Core Pricing & Fees"
       ]
     },
     "routing": {
@@ -337,32 +337,32 @@
       "totalLinesChanged": 329,
       "fileCount": 6,
       "sensitiveCategories": [
-        "Pricing & Billing"
+        "Core Pricing & Fees"
       ],
       "flaggedFiles": [
         {
           "file": "common/src/main/kotlin/com/deliveryhero/dynamicpricing/common/util/TransactionSupport.kt",
-          "category": "Pricing & Billing"
+          "category": "Core Pricing & Fees"
         },
         {
           "file": "common/src/test/kotlin/com/deliveryhero/dynamicpricing/common/util/TransactionSupportTest.kt",
-          "category": "Pricing & Billing"
+          "category": "Core Pricing & Fees"
         },
         {
           "file": "workspace-common/src/main/kotlin/com/deliveryhero/dynamicpricing/workspace/common/pricing/mov/MovConfigurationService.kt",
-          "category": "Pricing & Billing"
+          "category": "Core Pricing & Fees"
         },
         {
           "file": "workspace-common/src/main/kotlin/com/deliveryhero/dynamicpricing/workspace/common/pricing/traveltime/TravelTimeFeeConfigurationService.kt",
-          "category": "Pricing & Billing"
+          "category": "Core Pricing & Fees"
         },
         {
           "file": "workspace-common/src/test/kotlin/com/deliveryhero/dynamicpricing/workspace/common/pricing/mov/MovConfigurationServiceTest.kt",
-          "category": "Pricing & Billing"
+          "category": "Core Pricing & Fees"
         }
       ],
       "reasons": [
-        "Touches sensitive path(s): Pricing & Billing"
+        "Touches sensitive path(s): Core Pricing & Fees"
       ]
     },
     "routing": {

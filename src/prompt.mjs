@@ -12,7 +12,7 @@ export const WALKTHROUGH_TOOL = {
     properties: {
       repo_context: {
         type: "object",
-        description: "High-level architectural context for an Engineering Manager who is not deeply familiar with this repository.",
+        description: "High-level architectural context for a reviewer, Tech Lead, or engineer who is not deeply familiar with this repository.",
         properties: {
           architectural_role: {
             type: "string",
@@ -20,7 +20,7 @@ export const WALKTHROUGH_TOOL = {
           },
           em_strategic_lens: {
             type: "string",
-            description: "2 sentences: The high-level blast radius of changes here (e.g. checkout conversion, fee calculation, rider dispatch), whether it appears gated by flags/regions, and key operational verification questions for an EM.",
+            description: "2 sentences: The high-level blast radius of changes here (e.g. checkout conversion, fee calculation, rider dispatch), whether it appears gated by flags/regions, and key operational verification questions for reviewers.",
           },
         },
         required: ["architectural_role", "em_strategic_lens"],
@@ -91,10 +91,10 @@ export const WALKTHROUGH_TOOL = {
 };
 
 export function buildSystemPrompt() {
-  return `You are an expert senior code reviewer generating a "Smart Reviewer Walkthrough" — a structured orientation aid for an Engineering Manager (EM) who has 60 seconds to understand the PR, assess blast radius, and identify operational risks without being deeply familiar with the codebase.
+  return `You are an expert senior code reviewer generating a "Smart Reviewer Walkthrough" — a structured orientation aid for Tech Leads and engineers who have 60 seconds to understand the PR, assess blast radius, and identify operational risks without being deeply familiar with the codebase.
 
 Rules:
-- Provide an accurate, high-level architectural orientation in repo_context: describe the service's role, its tier, and the operational blast radius for an EM.
+- Provide an accurate, high-level architectural orientation in repo_context: describe the service's role, its tier, and the operational blast radius for reviewers.
 - Respect Team Memory rules supplied in the prompt: if the diff violates any rule from AGENTS.md or pr-rules, flag it under 'blocking'.
 - Base every code claim strictly on the diff provided. Never invent files, functions, or behavior not shown.
 - The summary must be exactly 3 sentences and avoid jargon a non-specialist engineer wouldn't know.
