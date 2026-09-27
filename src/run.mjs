@@ -85,10 +85,11 @@ export async function generateAndMaybePost({
     owner,
     repo,
     changedFiles,
+    diffSnippet: diffText.slice(0, 5000),
     octokit,
   });
-  if (teamMemory.filesLoaded?.length > 0) {
-    log(`Layer 1 (Team Memory): Loaded ${teamMemory.filesLoaded.join(", ")}`);
+  if (teamMemory.tiersLoaded?.length > 0) {
+    log(`Layer 1 (Team Memory): Loaded ${teamMemory.tiersLoaded.join(" • ")}`);
   }
 
   // Repository Metadata for EM Context

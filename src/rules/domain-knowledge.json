@@ -1,0 +1,75 @@
+{
+  "domain": "Logistics & Customer Pricing (CPL)",
+  "version": "1.0",
+  "serviceCatalog": {
+    "logistics-dynamic-pricing": {
+      "name": "Dynamic Pricing Service (DPS)",
+      "tier": "Tier 2 Critical Path",
+      "squad": "Customer Pricing Squad",
+      "role": "Calculates dynamic delivery fees, rider surcharges, and customer subscription discounts across APAC, Europe, and Middle East platforms via gRPC & REST.",
+      "techStack": "Kotlin, Spring Boot, PostgreSQL, AWS EKS, SQS, Kafka, Valkey/Redis, S3",
+      "dependencies": ["Per-country PostgreSQL RDS", "FeaturesWithFriends (FwF)", "S3 Precomputed Price Rules", "Customer Delivery Platform (CDP)"]
+    },
+    "logistics-deliveryareas": {
+      "name": "Delivery Area Service (DAS)",
+      "tier": "Tier 2 Service",
+      "squad": "Delivery Area Squad",
+      "role": "Manages delivery polygons, vendor service zones, and geofencing boundaries for rider dispatch and pricing lookup.",
+      "techStack": "Go / Java, PostGIS / PostgreSQL, Kafka, Redis",
+      "dependencies": ["PostGIS", "Kafka zone events"]
+    },
+    "logistics-tracking-api": {
+      "name": "Logistics Tracking API",
+      "tier": "Tier 1 Critical Path",
+      "squad": "Rider Tracking Squad",
+      "role": "Real-time rider coordinates and live order tracking pipeline for consumer checkout and mobile tracking.",
+      "techStack": "Go / Kotlin, Redis, Envoy, WebSockets",
+      "dependencies": ["Redis Streams", "Envoy Ingress"]
+    },
+    "time-estimation": {
+      "name": "Time Estimation Service",
+      "tier": "Tier 2 Service",
+      "squad": "Dispatch Intelligence",
+      "role": "Machine learning inference pipeline predicting travel time, pickup duration, and courier arrival estimates.",
+      "techStack": "Python / Go, gRPC, Redis, ML Model Store",
+      "dependencies": ["Redis", "gRPC Gateway"]
+    }
+  },
+  "incidentGuardrails": [
+    {
+      "id": "PM-6946",
+      "name": "Non-Negative Delivery Fee Invariant",
+      "sourceIncident": "#6946 (Philippines Negative Fee Outage)",
+      "rule": "Delivery fee outputs must explicitly assert non-negative integers (`fee >= 0`). Never allow discount or incentive deductions to produce negative total delivery fees.",
+      "triggers": ["fee", "deliveryFee", "discount", "calculatePrice", "incentive", "deduct"]
+    },
+    {
+      "id": "PM-6561",
+      "name": "Weather Surge Condition Enforcement",
+      "sourceIncident": "#6561 (Ukraine Weather Surge Failure)",
+      "rule": "When severe weather condition flags (rain/snow) are active from LWS, assert that multiplier logic produces an active surge surcharge (`multiplier > 1.0`) and does not silently fall back to standard 1.0.",
+      "triggers": ["weather", "surge", "multiplier", "badWeather", "rain", "snow"]
+    },
+    {
+      "id": "PM-6990",
+      "name": "Subscription Fee Waiver Continuity",
+      "sourceIncident": "#6990 (Singapore Pandapro Subscription Drift)",
+      "rule": "Changes gating customer subscription logic must verify that fallback branches do not inadvertently charge full delivery fees to active subscription members when feature flags are toggled.",
+      "triggers": ["subscription", "pandapro", "proCustomer", "isSubscribed", "hasSubscription", "waiver"]
+    },
+    {
+      "id": "PM-3838",
+      "name": "S3 Precomputation Schema Sync",
+      "sourceIncident": "#3838 (Woowa South Korea Precomputed Lag)",
+      "rule": "When modifying S3 price dataset schemas or precomputation paths in batch jobs, verify that the API runtime loader contract matches the exact S3 key schema to prevent country shard lag.",
+      "triggers": ["s3", "precomputed", "dataset", "datasetPath", "loadFromS3", "bucket"]
+    },
+    {
+      "id": "PM-3681",
+      "name": "Audit Logging Continuity",
+      "sourceIncident": "#3681 (Bulgaria Missing Audit Log Incident)",
+      "rule": "When modifying pricing audit log structures, ensure logging pipelines maintain non-zero event throughput and do not swallow parsing exceptions silently.",
+      "triggers": ["auditLog", "audit", "fluentbit", "logEntry", "PricingAudit"]
+    }
+  ]
+}

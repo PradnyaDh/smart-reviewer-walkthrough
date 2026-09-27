@@ -115,7 +115,9 @@ export function formatComment({ walkthrough, model, riskEvaluation, teamMemory, 
   }
 
   // 7. Context transparency footer
-  if (teamMemory?.filesLoaded?.length) {
+  if (teamMemory?.tiersLoaded?.length) {
+    lines.push(`<sub>📚 Evaluated against Team Memory: ${teamMemory.tiersLoaded.map((t) => `\`${t}\``).join(" • ")}</sub>`, "");
+  } else if (teamMemory?.filesLoaded?.length) {
     lines.push(`<sub>📚 Evaluated against Team Memory: ${teamMemory.filesLoaded.map((f) => `\`${f}\``).join(", ")}</sub>`, "");
   }
 

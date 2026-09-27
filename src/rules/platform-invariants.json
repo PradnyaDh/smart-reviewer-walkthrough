@@ -1,0 +1,36 @@
+{
+  "name": "Platform Engineering Invariants",
+  "version": "1.0",
+  "rules": [
+    {
+      "id": "INV-001",
+      "category": "Concurrency & State",
+      "rule": "Shared in-memory caches or stores accessed by concurrent request threads must use thread-safe data structures (e.g. ConcurrentHashMap), never plain mutableMapOf() or HashMap.",
+      "triggers": ["Cache", "Store", "mutableMapOf", "HashMap", "Atomic"]
+    },
+    {
+      "id": "INV-002",
+      "category": "Feature Flags",
+      "rule": "All feature flag reads (e.g. FeaturesWithFriends / FwF / LaunchDarkly) must have an explicit safe fallback default (e.g. false / default strategy) so network timeouts or unconfigured country tenants do not throw exceptions.",
+      "triggers": ["isEnabled", "featureFlag", "fwf", "FeaturesWithFriends", "flag"]
+    },
+    {
+      "id": "INV-003",
+      "category": "Database & Query Safety",
+      "rule": "Database queries must always use parameterized bind variables; never use string concatenation or raw string interpolation in SQL / JPQL / HQL queries.",
+      "triggers": ["SELECT", "UPDATE", "DELETE", "repository", "entityManager", "createQuery"]
+    },
+    {
+      "id": "INV-004",
+      "category": "Wire Compatibility (Protobuf & Kafka)",
+      "rule": "Protobuf contract field tags and enum numbers must never be renumbered or removed. All new fields added to existing message payloads must be optional to preserve backward wire compatibility.",
+      "triggers": ["proto", "kafka", "KafkaMessage", "Protobuf", "Builder", "set"]
+    },
+    {
+      "id": "INV-005",
+      "category": "Observability & Error Handling",
+      "rule": "Scheduled cron tasks, Kafka consumers, and external network calls must catch exceptions at the job boundary to prevent pod crash-looping, and must emit error metrics or structured audit logs on failure.",
+      "triggers": ["@Scheduled", "cron", "KafkaListener", "consume", "observe"]
+    }
+  ]
+}
