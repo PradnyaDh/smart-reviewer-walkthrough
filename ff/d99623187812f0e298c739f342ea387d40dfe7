@@ -1,0 +1,21 @@
+src/rules/domain-knowledge.json
+  s_6941d5f8136cbe::t_43f3565b535ec3 149-172
+.claude/pr-rules/api.md
+  s_6941d5f8136cbe::t_6b5086cbbe7468 38-49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "ffd99623187812f0e298c739f342ea387d40dfe7",
+  "prompts": {},
+  "sessions": {
+    "s_6941d5f8136cbe": {
+      "agent_id": {
+        "tool": "gemini",
+        "id": "75797c3d-2841-4596-b24b-7abb7e1b4406",
+        "model": "gemini-3.5-flash"
+      },
+      "human_author": "Pradnya Tukaram Shelar <pradnya.shelar@deliveryhero.com>"
+    }
+  }
+}
