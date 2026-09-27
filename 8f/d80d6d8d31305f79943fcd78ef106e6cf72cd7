@@ -1,0 +1,23 @@
+src/claude.mjs
+  s_6941d5f8136cbe::t_e5e319a7338121 39
+  s_6941d5f8136cbe::t_f06661aba9fe85 57-64,66-76
+  s_6941d5f8136cbe::t_60f92b21898848 53-55
+scripts/cli.mjs
+  s_6941d5f8136cbe::t_63127031409250 10-12,20-21,27-31,39-45,49,52-55,66,90,93-159,162-163,165,173-179,194
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "8fd80d6d8d31305f79943fcd78ef106e6cf72cd7",
+  "prompts": {},
+  "sessions": {
+    "s_6941d5f8136cbe": {
+      "agent_id": {
+        "tool": "gemini",
+        "id": "75797c3d-2841-4596-b24b-7abb7e1b4406",
+        "model": "gemini-3.5-flash"
+      },
+      "human_author": "Pradnya Tukaram Shelar <pradnya.shelar@deliveryhero.com>"
+    }
+  }
+}
