@@ -5,6 +5,7 @@ import { formatComment, COMMENT_MARKER } from "./format.mjs";
 import { upsertComment } from "./github.mjs";
 import { loadRepoContext } from "./context.mjs";
 import { evaluateRisk } from "./router.mjs";
+import { resolveReviewers } from "./codeowners.mjs";
 
 /**
  * Shared orchestration: loads Team Memory (Layer 1), runs Analysis Swarm (Layer 2),
@@ -61,6 +62,23 @@ export async function generateAndMaybePost({
     totalDeletions: deletions,
   });
   log(`Layer 3 (Risk Gate): ${riskEvaluation.riskLevel} Risk -> ${riskEvaluation.recommendation}`);
+
+  // Layer 3 Extension: Smart Reviewer Routing
+  try {
+    const reviewerRouting = await resolveReviewers({
+      octokit,
+      owner,
+      repo,
+      changedFiles,
+    });
+    if (reviewerRouting.reviewers?.length > 0) {
+      log(`Layer 3 (Routing): ${reviewerRouting.reviewers.join(", ")} (${reviewerRouting.source})`);
+      riskEvaluation.recommendedReviewers = reviewerRouting.reviewers;
+      riskEvaluation.reviewerSource = reviewerRouting.source;
+    }
+  } catch (err) {
+    log(`Note: reviewer routing lookup (${err.message})`);
+  }
 
   // 2. LAYER 1: Team Memory Context
   const teamMemory = await loadRepoContext({

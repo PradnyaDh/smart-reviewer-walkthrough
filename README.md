@@ -111,6 +111,31 @@ node scripts/cli.mjs owner/repo 123 --model gemini-3-5-flash --post
 
 ---
 
+## 📊 Sprint PR Triage & Batch Scanner (`scripts/batch-review.mjs`)
+
+For Engineering Managers running sprint planning or daily PR standups, `scripts/batch-review.mjs` scans all open PRs across a target repository, runs deterministic risk screening, matches **CODEOWNERS**, and compiles an **Executive Triage Matrix**:
+
+```bash
+# Fast triage of top 10 open PRs across the repository:
+node scripts/batch-review.mjs deliveryhero/logistics-dynamic-pricing --limit 10
+
+# Scan and save the Sprint Triage Dashboard to your personal tracking repo:
+node scripts/batch-review.mjs deliveryhero/logistics-dynamic-pricing \
+  --limit 10 \
+  --post-issue PradnyaDh/smart-reviewer-walkthrough
+
+# Full AI scan on all open PRs (generates 3-sentence summaries for all):
+node scripts/batch-review.mjs deliveryhero/logistics-dynamic-pricing \
+  --limit 10 --full-ai --model gemini-3-5-flash
+```
+
+The generated dashboard sorts PRs into:
+* 🟢 **Fast-Track Candidates:** Non-sensitive, compact diffs ready for rapid sign-off.
+* 🟡 **Standard Reviews:** Routine features and non-blocking updates.
+* 🔴 **High Blast-Radius:** Flags touching pricing, billing, auth, migrations, or large diffs with recommended reviewer squads automatically resolved from `CODEOWNERS` or git history.
+
+---
+
 ## 🤖 Supported Models & Gateways
 
 The engine uses an Anthropic-compatible tool-calling interface (`/v1/messages`) with automatic response fallbacks. It seamlessly supports:

@@ -61,6 +61,9 @@ export function formatComment({ walkthrough, model, riskEvaluation, teamMemory, 
       `### 🚦 Risk Gate: ${icon} ${riskEvaluation.riskLevel} RISK (${riskEvaluation.recommendation})`,
       `* **Diff Metrics:** ${riskEvaluation.totalLinesChanged} lines changed across ${riskEvaluation.fileCount} file(s)`,
       riskEvaluation.reasons?.length ? `* **Gate Triggers:** ${riskEvaluation.reasons.join(" • ")}` : "",
+      riskEvaluation.recommendedReviewers?.length
+        ? `* **Recommended Reviewers (${riskEvaluation.reviewerSource}):** ${riskEvaluation.recommendedReviewers.join(" ")}`
+        : "",
       "",
       "---",
       ""
