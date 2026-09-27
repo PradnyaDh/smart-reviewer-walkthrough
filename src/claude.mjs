@@ -36,7 +36,7 @@ export async function generateWalkthrough({
     headers,
     body: JSON.stringify({
       model,
-      max_tokens: 4096,
+      max_tokens: 8192,
       system,
       messages: [{ role: "user", content: userPrompt }],
       tools: [tool],
@@ -50,9 +50,28 @@ export async function generateWalkthrough({
   }
 
   const data = await res.json();
-  const toolUse = data.content?.find((block) => block.type === "tool_use" && block.name === tool.name);
-  if (!toolUse) {
-    throw new Error("Claude did not return the expected tool_use block");
+  if (!data.content || data.content.length === 0) {
+    console.error("RAW LITELLM RESPONSE:", JSON.stringify(data, null, 2));
   }
-  return toolUse.input;
+  const toolUse = data.content?.find((block) => block.type === "tool_use" && block.name === tool.name);
+  if (toolUse && toolUse.input) {
+    return toolUse.input;
+  }
+
+  // Fallback 1: Any tool_use block
+  const anyTool = data.content?.find((block) => block.type === "tool_use");
+  if (anyTool && anyTool.input) {
+    return anyTool.input;
+  }
+
+  // Fallback 2: Parse text block if model returned JSON
+  const textBlock = data.content?.find((block) => block.type === "text")?.text;
+  if (textBlock) {
+    try {
+      const cleaned = textBlock.trim().replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "");
+      return JSON.parse(cleaned);
+    } catch {}
+  }
+
+  throw new Error(`Model did not return the expected tool_use block: ${JSON.stringify(data.content)}`);
 }
