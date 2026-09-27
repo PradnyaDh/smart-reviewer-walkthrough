@@ -9,21 +9,36 @@ const RISK_LABEL = {
 };
 
 export function formatComment({ walkthrough, model, truncated, omittedFiles }) {
-  const { summary, mermaid_diagram: mermaid, focus_points: focusPoints } = walkthrough;
+  const { repo_context: repoContext, summary, mermaid_diagram: mermaid, focus_points: focusPoints } = walkthrough;
 
   const lines = [
     COMMENT_MARKER,
     "## 🔎 Smart Reviewer Walkthrough",
     "",
+  ];
+
+  if (repoContext) {
+    lines.push(
+      "### 🏛️ Repository Context for EM Review",
+      `* **Architectural Role:** ${repoContext.architectural_role}`,
+      `* **EM Strategic Risk Lens:** ${repoContext.em_strategic_lens}`,
+      "",
+      "---",
+      ""
+    );
+  }
+
+  lines.push(
+    "### 📝 Summary",
     summary,
     "",
     "```mermaid",
     mermaid.trim(),
     "```",
-    "",
-  ];
+    ""
+  );
 
-  if (focusPoints.length > 0) {
+  if (focusPoints && focusPoints.length > 0) {
     lines.push("### 👀 Focus Your Eyes Here");
     focusPoints.forEach((point, i) => {
       const label = RISK_LABEL[point.risk_type] || RISK_LABEL.other;

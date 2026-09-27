@@ -41,6 +41,19 @@ export async function generateAndMaybePost({
 
   log(`Diff built from ${fileCount} file(s)${truncated ? ` (${omittedFiles.length} omitted for size)` : ""}. Calling model...`);
 
+  let repoInfo = null;
+  try {
+    const { data: repoData } = await octokit.rest.repos.get({ owner, repo });
+    repoInfo = {
+      fullName: repoData.full_name,
+      description: repoData.description,
+      language: repoData.language,
+      topics: repoData.topics,
+    };
+  } catch (err) {
+    log(`Note: could not fetch repo metadata (${err.message})`);
+  }
+
   const walkthrough = await generateWalkthrough({
     apiKey: anthropicApiKey,
     baseUrl: anthropicBaseUrl,
@@ -48,7 +61,7 @@ export async function generateAndMaybePost({
     cfAccessClientSecret,
     model,
     system: buildSystemPrompt(),
-    userPrompt: buildUserPrompt({ prTitle, prBody, diffText, truncated, omittedFiles }),
+    userPrompt: buildUserPrompt({ repoInfo, prTitle, prBody, diffText, truncated, omittedFiles }),
     tool: WALKTHROUGH_TOOL,
   });
 
