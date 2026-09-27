@@ -7,6 +7,7 @@ function parseArgs(argv) {
   const args = {
     post: false,
     postIssue: null,
+    issueNumber: null,
     compare: false,
     models: null,
     model: process.env.TEST_MODEL || "gemini-3-5-flash",
@@ -17,8 +18,9 @@ function parseArgs(argv) {
     const a = argv[i];
     if (a === "--post") args.post = true;
     else if (a === "--post-issue") args.postIssue = argv[++i];
+    else if (a === "--issue-number") args.issueNumber = parseInt(argv[++i], 10);
     else if (a === "--compare") args.compare = true;
-    else if (a === "--models") args.models = argv[++i].split(",").map((s) => s.strip ? s.strip() : s.trim());
+    else if (a === "--models") args.models = argv[++i].split(",").map((s) => s.trim());
     else if (a === "--model") args.model = argv[++i];
     else if (a === "--max-diff-chars") args.maxDiffChars = parseInt(argv[++i], 10);
     else if (a === "--help" || a === "-h") args.help = true;
@@ -42,7 +44,7 @@ Options:
   --max-diff-chars <n>      Cap on diff size sent to model (default: 60000)
   --post                    Actually create/update comment on the source PR
   --post-issue <owner/repo> Post the review as an Issue in your tracking repo
-                             instead of commenting on the source PR
+  --issue-number <number>   Update an existing issue instead of creating a new one
 
 Environment:
   ANTHROPIC_API_KEY         Required. API key or gateway token.
@@ -50,9 +52,9 @@ Environment:
   GH_TOKEN / GITHUB_TOKEN   Optional. Falls back to \`gh auth token\` if unset.
 
 Examples:
-  # Run all 3 models and post side-by-side comparison to personal tracking repo:
+  # Refresh an existing review issue:
   node scripts/cli.mjs deliveryhero/logistics-dynamic-pricing 842 \\
-    --compare --post-issue PradnyaDh/smart-reviewer-walkthrough
+    --compare --post-issue PradnyaDh/smart-reviewer-walkthrough --issue-number 3
 `);
 }
 
@@ -63,7 +65,7 @@ function getGithubToken() {
 }
 
 async function main() {
-  const { positional, post, postIssue, compare, models, model, maxDiffChars, help } = parseArgs(process.argv.slice(2));
+  const { positional, post, postIssue, issueNumber, compare, models, model, maxDiffChars, help } = parseArgs(process.argv.slice(2));
 
   if (help || positional.length < 2) {
     printUsage();
@@ -115,7 +117,7 @@ async function main() {
         cfAccessClientSecret: process.env.CF_ACCESS_CLIENT_SECRET,
         model: m,
         maxDiffChars,
-        post: isMultiModel ? false : post, // Only post to source PR if single model
+        post: isMultiModel ? false : post,
         log: (msg) => console.error(`  ↳ ${msg}`),
       });
       if (res) {
@@ -178,17 +180,33 @@ async function main() {
       ? finalMarkdown
       : `${finalMarkdown}\n\n---\n**🔗 Source Pull Request:** https://github.com/${owner}/${repo}/pull/${pullNumber}`;
 
-    console.error(`\n[smart-reviewer-walkthrough] Creating tracking issue in ${targetOwner}/${targetRepo}...`);
-    try {
-      const { data: createdIssue } = await octokit.rest.issues.create({
-        owner: targetOwner,
-        repo: targetRepo,
-        title: issueTitle,
-        body: issueBody,
-      });
-      console.error(`[smart-reviewer-walkthrough] ✅ Created review issue #${createdIssue.number}: ${createdIssue.html_url}`);
-    } catch (err) {
-      console.error(`\n❌ Failed to create issue in ${targetOwner}/${targetRepo}: ${err.message}`);
+    if (issueNumber) {
+      console.error(`\n[smart-reviewer-walkthrough] Refreshing existing issue #${issueNumber} in ${targetOwner}/${targetRepo}...`);
+      try {
+        const { data: updatedIssue } = await octokit.rest.issues.update({
+          owner: targetOwner,
+          repo: targetRepo,
+          issue_number: issueNumber,
+          title: issueTitle,
+          body: issueBody,
+        });
+        console.error(`[smart-reviewer-walkthrough] ✅ Successfully updated issue #${updatedIssue.number}: ${updatedIssue.html_url}`);
+      } catch (err) {
+        console.error(`\n❌ Failed to update issue #${issueNumber}: ${err.message}`);
+      }
+    } else {
+      console.error(`\n[smart-reviewer-walkthrough] Creating tracking issue in ${targetOwner}/${targetRepo}...`);
+      try {
+        const { data: createdIssue } = await octokit.rest.issues.create({
+          owner: targetOwner,
+          repo: targetRepo,
+          title: issueTitle,
+          body: issueBody,
+        });
+        console.error(`[smart-reviewer-walkthrough] ✅ Created review issue #${createdIssue.number}: ${createdIssue.html_url}`);
+      } catch (err) {
+        console.error(`\n❌ Failed to create issue in ${targetOwner}/${targetRepo}: ${err.message}`);
+      }
     }
   } else if (!post) {
     console.error("\n(Dry run — nothing was posted to GitHub. Pass --post-issue <owner/repo> to save to your tracking repo.)");
