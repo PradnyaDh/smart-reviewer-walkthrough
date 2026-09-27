@@ -18,6 +18,14 @@
       "techStack": "Kotlin, Undertow, Kotlin Coroutines, Valkey / ElastiCache, FeaturesWithFriends (FwF)",
       "dependencies": ["Valkey Caching", "FeaturesWithFriends (FwF)", "S3 Datasets", "Weather Service (LWS)", "CDP Gateway"]
     },
+    "logistics-dynamic-pricing-dashboard": {
+      "name": "Dynamic Pricing Dashboard (Frontend)",
+      "tier": "Tier 3 Operations UI",
+      "squad": "Customer Pricing Squad",
+      "role": "Single-Page Application used by regional country operations teams to configure pricing schemes, campaigns, vendor clusters, and experiments.",
+      "techStack": "TypeScript, React, Vite, React Query, React Hook Form, Luxon, Tailwind",
+      "dependencies": ["Dynamic Pricing Admin REST API", "FeaturesWithFriends (FwF)", "Global Entity ID (GEID) Service"]
+    },
     "logistics-deliveryareas": {
       "name": "Delivery Area Service (DAS)",
       "tier": "Tier 2 Service",
@@ -170,6 +178,42 @@
       "topic": "Range Boundary Validation & Testing",
       "rule": "Value range objects (from..to) must validate 'from <= to' in an init {} block, and test suites must explicitly test boundary edges (e.g. exactly 0, boundary values, and negative limits).",
       "triggers": ["range", "boundary", "from", "to", "threshold", "test"]
+    },
+    {
+      "id": "DASH-001",
+      "topic": "Frontend BigDecimal Precision",
+      "rule": "Never cast big_decimal string values from backend API responses to raw JavaScript Float/Number for fee logic; use string-based decimal formatters to avoid cent rounding errors.",
+      "triggers": ["big_decimal", "parseFloat", "Number", "discount", "fee"]
+    },
+    {
+      "id": "DASH-002",
+      "topic": "Form Cloning ID Stripping",
+      "rule": "In form cloning flows, explicitly set persistent identifiers to undefined (id: undefined, target_group_id: undefined) rather than using conditional spread syntax to prevent form tracking corruption in react-hook-form.",
+      "triggers": ["clone", "reset", "target_group_id", "form", "useForm"]
+    },
+    {
+      "id": "DASH-003",
+      "topic": "Primitive Hook Dependencies",
+      "rule": "Never pass object references into useEffect or useCallback dependency arrays; use primitive identifiers (e.g. vendor.id) to avoid infinite re-render loops and redundant background refetches.",
+      "triggers": ["useEffect", "useCallback", "dependency", "deps"]
+    },
+    {
+      "id": "BACK-001",
+      "topic": "JPA Entity Non-Nullable Primary Keys",
+      "rule": "JPA entities must declare primary key IDs as non-nullable (val id: Long) to prevent Hibernate mapping ambiguities and NPEs during entity persistence.",
+      "triggers": ["@Entity", "@Id", "id: Long?", "primaryKey"]
+    },
+    {
+      "id": "BACK-002",
+      "topic": "Liquibase Immutability & Rollbacks",
+      "rule": "Liquibase changelogs are immutable once merged. Never modify merged changesets; append a new changelog file and include an explicit rollback block.",
+      "triggers": ["changelog", "liquibase", "changeset", "migration"]
+    },
+    {
+      "id": "BACK-003",
+      "topic": "Audit Log Transactional Consistency",
+      "rule": "Mutating admin actions that generate pricing audit logs must execute inside the same @Transactional boundary as the main entity update to prevent orphaned audit records on rollback.",
+      "triggers": ["@Transactional", "audit", "PricingAudit", "rollback", "save"]
     }
   ]
 }
