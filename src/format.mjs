@@ -8,6 +8,27 @@ const RISK_LABEL = {
   other: "Risk",
 };
 
+export function sanitizeMermaid(code) {
+  if (!code) return "";
+  return code
+    .split("\n")
+    .map((line) => {
+      // Matches NodeId[label] or NodeId{label}
+      return line.replace(
+        /(\b[A-Za-z0-9_]+)(\[|\{)([^\n"\]\}]+)(\]|\})/g,
+        (match, id, open, text, close) => {
+          if (text.startsWith('"') && text.endsWith('"')) return match;
+          if (/[\(\):?=<>&]/.test(text)) {
+            const safeText = text.replace(/"/g, "'");
+            return `${id}${open}"${safeText}"${close}`;
+          }
+          return match;
+        }
+      );
+    })
+    .join("\n");
+}
+
 export function formatComment({ walkthrough, model, truncated, omittedFiles }) {
   const { repo_context: repoContext, summary, mermaid_diagram: mermaid, focus_points: focusPoints } = walkthrough;
 
@@ -28,12 +49,14 @@ export function formatComment({ walkthrough, model, truncated, omittedFiles }) {
     );
   }
 
+  const cleanMermaid = sanitizeMermaid(mermaid || "");
+
   lines.push(
     "### 📝 Summary",
     summary,
     "",
     "```mermaid",
-    mermaid.trim(),
+    cleanMermaid.trim(),
     "```",
     ""
   );

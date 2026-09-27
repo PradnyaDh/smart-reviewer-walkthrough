@@ -27,7 +27,7 @@ export const WALKTHROUGH_TOOL = {
       mermaid_diagram: {
         type: "string",
         description:
-          "A single Mermaid 'flowchart TD' diagram (code only, no ``` fences) showing how data flows through the changed code: entry points, the functions/modules touched, and where it terminates (DB write, API response, queue publish, etc). Max ~15 nodes. Use short node labels.",
+          "A single Mermaid 'flowchart TD' diagram (code only, no ``` fences) showing how data flows through the changed code: entry points, the functions/modules touched, and where it terminates (DB write, API response, queue publish, etc). Max ~15 nodes. Use short node labels. IMPORTANT: Always wrap node text in double quotes if it contains parentheses, colons, or punctuation (e.g. A[\"Scheduler: fetch()\"] or B{\"Check: isEnabled?\"}) so GitHub's Mermaid renderer does not fail.",
       },
       focus_points: {
         type: "array",
@@ -63,7 +63,7 @@ Rules:
 - Provide an accurate, high-level architectural orientation in repo_context: describe the service's role, its position in the delivery platform, and the blast radius / operational risk lens for an EM.
 - Base every code claim strictly on the diff provided. Never invent files, functions, or behavior not shown.
 - The summary must be exactly 3 sentences and avoid jargon a non-specialist engineer wouldn't know.
-- The Mermaid diagram must be valid 'flowchart TD' syntax and reflect only the actual data flow touched by this diff, not the whole system.
+- The Mermaid diagram must be valid 'flowchart TD' syntax and reflect only the actual data flow touched by this diff, not the whole system. Always wrap node labels in double quotes if they contain parentheses, colons, or punctuation (e.g. A["task()"]).
 - focus_points must call out genuine race-condition, null/undefined, unhandled-error, or resource-leak risks — concrete ones, not generic reminders like "add tests" or "consider edge cases". If the diff has no such risks, return an empty array.
 - Always respond by calling the submit_walkthrough tool. Do not respond in plain text.`;
 }
