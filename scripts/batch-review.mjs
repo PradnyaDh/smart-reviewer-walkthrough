@@ -6,16 +6,25 @@
 // and reviewer routing for each, and generates an EM Sprint Triage Dashboard.
 
 import { execSync } from "node:child_process";
+import http from "node:http";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import * as github from "@actions/github";
 import { evaluateRisk } from "../src/router.mjs";
 import { resolveReviewers } from "../src/codeowners.mjs";
 import { generateAndMaybePost } from "../src/run.mjs";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 function parseArgs(argv) {
   const args = {
     state: "open",
     limit: 10,
     fullAi: false,
+    web: false,
+    port: 8787,
     model: process.env.TEST_MODEL || "gemini-3-5-flash",
     postIssue: null,
     issueNumber: null,
@@ -26,6 +35,8 @@ function parseArgs(argv) {
     if (a === "--state") args.state = argv[++i];
     else if (a === "--limit") args.limit = parseInt(argv[++i], 10);
     else if (a === "--full-ai") args.fullAi = true;
+    else if (a === "--web" || a === "--serve") args.web = true;
+    else if (a === "--port") args.port = parseInt(argv[++i], 10);
     else if (a === "--model") args.model = argv[++i];
     else if (a === "--post-issue") args.postIssue = argv[++i];
     else if (a === "--issue-number") args.issueNumber = parseInt(argv[++i], 10);
@@ -43,6 +54,8 @@ Options:
   --limit <number>          Max number of PRs to scan (default: 10)
   --full-ai                 Run full AI analysis swarm on each PR
   --model <id>              Model to use for AI analysis (default: gemini-3-5-flash)
+  --web                     Launch the interactive EM Standup Web Dashboard locally
+  --port <number>           Port to run web server on (default: 8787)
   --post-issue <owner/repo> Post compiled Sprint Triage Dashboard to your tracking repo
   --issue-number <num>      Update existing tracking issue instead of creating a new one
 
@@ -51,13 +64,12 @@ Environment:
   ANTHROPIC_API_KEY         Required if --full-ai is used.
   ANTHROPIC_BASE_URL        Optional gateway override.
 
-Example:
+Examples:
   # Fast triage of top 10 open PRs:
   node scripts/batch-review.mjs deliveryhero/logistics-dynamic-pricing --limit 10
 
-  # Save triage report to personal tracker:
-  node scripts/batch-review.mjs deliveryhero/logistics-dynamic-pricing \\
-    --limit 10 --post-issue PradnyaDh/smart-reviewer-walkthrough
+  # Launch the interactive EM Web Dashboard at http://localhost:8787:
+  node scripts/batch-review.mjs deliveryhero/logistics-dynamic-pricing --limit 10 --web
 `);
 }
 
@@ -68,7 +80,7 @@ function getGithubToken() {
 }
 
 async function main() {
-  const { positional, state, limit, fullAi, model, postIssue, issueNumber, help } = parseArgs(process.argv.slice(2));
+  const { positional, state, limit, fullAi, web, port, model, postIssue, issueNumber, help } = parseArgs(process.argv.slice(2));
 
   if (help || positional.length < 1) {
     printUsage();
@@ -176,6 +188,17 @@ async function main() {
     triaged.push(item);
     const badge = risk.riskLevel === "HIGH" ? "🔴 HIGH" : risk.riskLevel === "MEDIUM" ? "🟡 MED" : "🟢 LOW";
     process.stderr.write(`${badge} (${risk.recommendation})\n`);
+  }
+
+  // Always save data.json for the web dashboard
+  const webDir = path.join(__dirname, "../web");
+  const dataPath = path.join(webDir, "data.json");
+  try {
+    if (!fs.existsSync(webDir)) fs.mkdirSync(webDir, { recursive: true });
+    fs.writeFileSync(dataPath, JSON.stringify(triaged, null, 2), "utf8");
+    console.error(`\n[batch-review] 💾 Saved fresh triage snapshot (${triaged.length} PRs) to web/data.json`);
+  } catch (err) {
+    console.error(`[batch-review] Note: could not write data.json (${err.message})`);
   }
 
   // Group by risk
@@ -287,6 +310,42 @@ async function main() {
         console.error(`\n❌ Failed to create issue: ${err.message}`);
       }
     }
+  }
+
+  // Web Server
+  if (web) {
+    const server = http.createServer((req, res) => {
+      let reqPath = req.url === "/" ? "/index.html" : req.url;
+      const filePath = path.join(webDir, reqPath.split("?")[0]);
+      if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+        const ext = path.extname(filePath);
+        const mime = {
+          ".html": "text/html; charset=utf-8",
+          ".json": "application/json",
+          ".js": "application/javascript",
+          ".css": "text/css",
+        }[ext] || "text/plain";
+        res.writeHead(200, { "Content-Type": mime });
+        fs.createReadStream(filePath).pipe(res);
+      } else {
+        res.writeHead(404);
+        res.end("Not Found");
+      }
+    });
+
+    server.listen(port, () => {
+      console.error(`\n================================================================================`);
+      console.error(`🚀 Interactive EM Standup Dashboard is active at:`);
+      console.error(`   👉 http://localhost:${port}`);
+      console.error(`================================================================================`);
+      console.error(`Press Ctrl+C to terminate the web server.`);
+      try {
+        execSync(`open http://localhost:${port}`);
+      } catch {}
+    });
+
+    // Keep process alive
+    await new Promise(() => {});
   }
 }
 

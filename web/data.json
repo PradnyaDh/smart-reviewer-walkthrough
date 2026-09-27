@@ -1,0 +1,425 @@
+[
+  {
+    "number": 3264,
+    "title": "LOGDPO-1707: slack notifications for finished ToD runs",
+    "author": "awilkester",
+    "url": "https://github.com/deliveryhero/logistics-dynamic-pricing/pull/3264",
+    "draft": false,
+    "additions": 702,
+    "deletions": 166,
+    "totalLines": 868,
+    "fileCount": 22,
+    "risk": {
+      "riskLevel": "HIGH",
+      "recommendation": "ESCALATE_HUMAN",
+      "totalLinesChanged": 868,
+      "fileCount": 22,
+      "sensitiveCategories": [
+        "Pricing & Billing"
+      ],
+      "flaggedFiles": [
+        {
+          "file": "admin/src/main/kotlin/com/deliveryhero/dynamicpricing/common/slack/SlackWebhookClient.kt",
+          "category": "Pricing & Billing"
+        },
+        {
+          "file": "admin/src/main/kotlin/com/deliveryhero/dynamicpricing/common/slack/SlackWebhookClientConfig.kt",
+          "category": "Pricing & Billing"
+        },
+        {
+          "file": "admin/src/main/kotlin/com/deliveryhero/dynamicpricing/common/slack/SlackWebhookClientProperties.kt",
+          "category": "Pricing & Billing"
+        },
+        {
+          "file": "admin/src/main/kotlin/com/deliveryhero/dynamicpricing/experiment/TodOptimizerRunStatusConverter.kt",
+          "category": "Pricing & Billing"
+        },
+        {
+          "file": "admin/src/main/kotlin/com/deliveryhero/dynamicpricing/experiment/contracts/input/Segmentation.kt",
+          "category": "Pricing & Billing"
+        }
+      ],
+      "reasons": [
+        "Touches sensitive path(s): Pricing & Billing",
+        "Diff exceeds standard threshold: 868 lines changed across 22 files"
+      ]
+    },
+    "routing": {
+      "reviewers": [
+        "@deliveryhero/dps-workspace",
+        "@deliveryhero/dps-api",
+        "@deliveryhero/dps-optimization"
+      ],
+      "source": "CODEOWNERS",
+      "rulesMatched": [
+        {
+          "file": "admin/src/main/kotlin/com/deliveryhero/dynamicpricing/common/slack/SlackWebhookClient.kt",
+          "pattern": "*",
+          "owners": [
+            "@deliveryhero/dps-workspace",
+            "@deliveryhero/dps-api",
+            "@deliveryhero/dps-optimization"
+          ]
+        },
+        {
+          "file": "admin/src/main/kotlin/com/deliveryhero/dynamicpricing/common/slack/SlackWebhookClientConfig.kt",
+          "pattern": "*",
+          "owners": [
+            "@deliveryhero/dps-workspace",
+            "@deliveryhero/dps-api",
+            "@deliveryhero/dps-optimization"
+          ]
+        },
+        {
+          "file": "admin/src/main/kotlin/com/deliveryhero/dynamicpricing/common/slack/SlackWebhookClientProperties.kt",
+          "pattern": "*",
+          "owners": [
+            "@deliveryhero/dps-workspace",
+            "@deliveryhero/dps-api",
+            "@deliveryhero/dps-optimization"
+          ]
+        },
+        {
+          "file": "admin/src/main/kotlin/com/deliveryhero/dynamicpricing/experiment/TodOptimizerRunStatusConverter.kt",
+          "pattern": "*",
+          "owners": [
+            "@deliveryhero/dps-workspace",
+            "@deliveryhero/dps-api",
+            "@deliveryhero/dps-optimization"
+          ]
+        },
+        {
+          "file": "admin/src/main/kotlin/com/deliveryhero/dynamicpricing/experiment/contracts/input/Segmentation.kt",
+          "pattern": "*",
+          "owners": [
+            "@deliveryhero/dps-workspace",
+            "@deliveryhero/dps-api",
+            "@deliveryhero/dps-optimization"
+          ]
+        }
+      ]
+    },
+    "aiReview": null
+  },
+  {
+    "number": 3303,
+    "title": "LOGDPO-1729: Pass has_subscription order filter to order share optimization Kafka message",
+    "author": "Senpeng-Li",
+    "url": "https://github.com/deliveryhero/logistics-dynamic-pricing/pull/3303",
+    "draft": true,
+    "additions": 3,
+    "deletions": 1,
+    "totalLines": 4,
+    "fileCount": 3,
+    "risk": {
+      "riskLevel": "HIGH",
+      "recommendation": "ESCALATE_HUMAN",
+      "totalLinesChanged": 4,
+      "fileCount": 3,
+      "sensitiveCategories": [
+        "Pricing & Billing"
+      ],
+      "flaggedFiles": [
+        {
+          "file": "admin/src/main/kotlin/com/deliveryhero/dynamicpricing/automaticassignment/optimization/OptimizationService.kt",
+          "category": "Pricing & Billing"
+        },
+        {
+          "file": "admin/src/main/kotlin/com/deliveryhero/dynamicpricing/automaticassignment/optimization/contract/common/OrderFilters.kt",
+          "category": "Pricing & Billing"
+        }
+      ],
+      "reasons": [
+        "Touches sensitive path(s): Pricing & Billing",
+        "PR is currently marked as DRAFT"
+      ]
+    },
+    "routing": {
+      "reviewers": [
+        "@deliveryhero/dps-workspace",
+        "@deliveryhero/dps-api",
+        "@deliveryhero/dps-optimization"
+      ],
+      "source": "CODEOWNERS",
+      "rulesMatched": [
+        {
+          "file": "admin/src/main/kotlin/com/deliveryhero/dynamicpricing/automaticassignment/optimization/OptimizationService.kt",
+          "pattern": "*",
+          "owners": [
+            "@deliveryhero/dps-workspace",
+            "@deliveryhero/dps-api",
+            "@deliveryhero/dps-optimization"
+          ]
+        },
+        {
+          "file": "admin/src/main/kotlin/com/deliveryhero/dynamicpricing/automaticassignment/optimization/contract/common/OrderFilters.kt",
+          "pattern": "*",
+          "owners": [
+            "@deliveryhero/dps-workspace",
+            "@deliveryhero/dps-api",
+            "@deliveryhero/dps-optimization"
+          ]
+        },
+        {
+          "file": "protorepo-lib/protorepo",
+          "pattern": "*",
+          "owners": [
+            "@deliveryhero/dps-workspace",
+            "@deliveryhero/dps-api",
+            "@deliveryhero/dps-optimization"
+          ]
+        }
+      ]
+    },
+    "aiReview": null
+  },
+  {
+    "number": 3300,
+    "title": "LOGDPW-2780 Update releaseProcess.md",
+    "author": "HyunsangHan",
+    "url": "https://github.com/deliveryhero/logistics-dynamic-pricing/pull/3300",
+    "draft": false,
+    "additions": 89,
+    "deletions": 87,
+    "totalLines": 176,
+    "fileCount": 2,
+    "risk": {
+      "riskLevel": "MEDIUM",
+      "recommendation": "STANDARD_REVIEW",
+      "totalLinesChanged": 176,
+      "fileCount": 2,
+      "sensitiveCategories": [],
+      "flaggedFiles": [],
+      "reasons": [
+        "Medium diff size: 176 lines across 2 files"
+      ]
+    },
+    "routing": {
+      "reviewers": [
+        "@deliveryhero/dps-workspace",
+        "@deliveryhero/dps-api",
+        "@deliveryhero/dps-optimization"
+      ],
+      "source": "CODEOWNERS",
+      "rulesMatched": [
+        {
+          "file": "ai/context-extensions/vendor-group-task.md",
+          "pattern": "*",
+          "owners": [
+            "@deliveryhero/dps-workspace",
+            "@deliveryhero/dps-api",
+            "@deliveryhero/dps-optimization"
+          ]
+        },
+        {
+          "file": "docs/releaseProcess.md",
+          "pattern": "*",
+          "owners": [
+            "@deliveryhero/dps-workspace",
+            "@deliveryhero/dps-api",
+            "@deliveryhero/dps-optimization"
+          ]
+        }
+      ]
+    },
+    "aiReview": null
+  },
+  {
+    "number": 3269,
+    "title": "refactor: evaluate VendorPortalIntegration flag once per run, not per vendor group",
+    "author": "leilaplanisi-dh",
+    "url": "https://github.com/deliveryhero/logistics-dynamic-pricing/pull/3269",
+    "draft": false,
+    "additions": 97,
+    "deletions": 9,
+    "totalLines": 106,
+    "fileCount": 5,
+    "risk": {
+      "riskLevel": "HIGH",
+      "recommendation": "ESCALATE_HUMAN",
+      "totalLinesChanged": 106,
+      "fileCount": 5,
+      "sensitiveCategories": [
+        "Pricing & Billing"
+      ],
+      "flaggedFiles": [
+        {
+          "file": "jobs/src/main/kotlin/com/deliveryhero/dynamicpricing/vendor/group/VendorGroupingService.kt",
+          "category": "Pricing & Billing"
+        },
+        {
+          "file": "jobs/src/test/kotlin/com/deliveryhero/dynamicpricing/vendor/group/VendorGroupServiceTest.kt",
+          "category": "Pricing & Billing"
+        },
+        {
+          "file": "jobs/src/test/kotlin/com/deliveryhero/dynamicpricing/vendorportal/flows/HSCampaignSubscriptionOptInOutIT.kt",
+          "category": "Pricing & Billing"
+        },
+        {
+          "file": "jobs/src/test/kotlin/com/deliveryhero/dynamicpricing/vendorportal/flows/MarketingCampaignVendorGroupingOutboxIT.kt",
+          "category": "Pricing & Billing"
+        }
+      ],
+      "reasons": [
+        "Touches sensitive path(s): Pricing & Billing"
+      ]
+    },
+    "routing": {
+      "reviewers": [
+        "@deliveryhero/dps-workspace",
+        "@deliveryhero/dps-api",
+        "@deliveryhero/dps-optimization"
+      ],
+      "source": "CODEOWNERS",
+      "rulesMatched": [
+        {
+          "file": "ai/context-extensions/code-quality-antipatterns.md",
+          "pattern": "*",
+          "owners": [
+            "@deliveryhero/dps-workspace",
+            "@deliveryhero/dps-api",
+            "@deliveryhero/dps-optimization"
+          ]
+        },
+        {
+          "file": "jobs/src/main/kotlin/com/deliveryhero/dynamicpricing/vendor/group/VendorGroupingService.kt",
+          "pattern": "*",
+          "owners": [
+            "@deliveryhero/dps-workspace",
+            "@deliveryhero/dps-api",
+            "@deliveryhero/dps-optimization"
+          ]
+        },
+        {
+          "file": "jobs/src/test/kotlin/com/deliveryhero/dynamicpricing/vendor/group/VendorGroupServiceTest.kt",
+          "pattern": "*",
+          "owners": [
+            "@deliveryhero/dps-workspace",
+            "@deliveryhero/dps-api",
+            "@deliveryhero/dps-optimization"
+          ]
+        },
+        {
+          "file": "jobs/src/test/kotlin/com/deliveryhero/dynamicpricing/vendorportal/flows/HSCampaignSubscriptionOptInOutIT.kt",
+          "pattern": "*",
+          "owners": [
+            "@deliveryhero/dps-workspace",
+            "@deliveryhero/dps-api",
+            "@deliveryhero/dps-optimization"
+          ]
+        },
+        {
+          "file": "jobs/src/test/kotlin/com/deliveryhero/dynamicpricing/vendorportal/flows/MarketingCampaignVendorGroupingOutboxIT.kt",
+          "pattern": "*",
+          "owners": [
+            "@deliveryhero/dps-workspace",
+            "@deliveryhero/dps-api",
+            "@deliveryhero/dps-optimization"
+          ]
+        }
+      ]
+    },
+    "aiReview": null
+  },
+  {
+    "number": 3265,
+    "title": "LOGDPA-2020 : Fix Audit Log Discrepancy on DB Rollback",
+    "author": "dahyeong-dh",
+    "url": "https://github.com/deliveryhero/logistics-dynamic-pricing/pull/3265",
+    "draft": false,
+    "additions": 259,
+    "deletions": 70,
+    "totalLines": 329,
+    "fileCount": 6,
+    "risk": {
+      "riskLevel": "HIGH",
+      "recommendation": "ESCALATE_HUMAN",
+      "totalLinesChanged": 329,
+      "fileCount": 6,
+      "sensitiveCategories": [
+        "Pricing & Billing"
+      ],
+      "flaggedFiles": [
+        {
+          "file": "common/src/main/kotlin/com/deliveryhero/dynamicpricing/common/util/TransactionSupport.kt",
+          "category": "Pricing & Billing"
+        },
+        {
+          "file": "common/src/test/kotlin/com/deliveryhero/dynamicpricing/common/util/TransactionSupportTest.kt",
+          "category": "Pricing & Billing"
+        },
+        {
+          "file": "workspace-common/src/main/kotlin/com/deliveryhero/dynamicpricing/workspace/common/pricing/mov/MovConfigurationService.kt",
+          "category": "Pricing & Billing"
+        },
+        {
+          "file": "workspace-common/src/main/kotlin/com/deliveryhero/dynamicpricing/workspace/common/pricing/traveltime/TravelTimeFeeConfigurationService.kt",
+          "category": "Pricing & Billing"
+        },
+        {
+          "file": "workspace-common/src/test/kotlin/com/deliveryhero/dynamicpricing/workspace/common/pricing/mov/MovConfigurationServiceTest.kt",
+          "category": "Pricing & Billing"
+        }
+      ],
+      "reasons": [
+        "Touches sensitive path(s): Pricing & Billing"
+      ]
+    },
+    "routing": {
+      "reviewers": [
+        "@deliveryhero/dps-workspace",
+        "@deliveryhero/dps-api",
+        "@deliveryhero/dps-optimization"
+      ],
+      "source": "CODEOWNERS",
+      "rulesMatched": [
+        {
+          "file": "common/src/main/kotlin/com/deliveryhero/dynamicpricing/common/util/TransactionSupport.kt",
+          "pattern": "*",
+          "owners": [
+            "@deliveryhero/dps-workspace",
+            "@deliveryhero/dps-api",
+            "@deliveryhero/dps-optimization"
+          ]
+        },
+        {
+          "file": "common/src/test/kotlin/com/deliveryhero/dynamicpricing/common/util/TransactionSupportTest.kt",
+          "pattern": "*",
+          "owners": [
+            "@deliveryhero/dps-workspace",
+            "@deliveryhero/dps-api",
+            "@deliveryhero/dps-optimization"
+          ]
+        },
+        {
+          "file": "workspace-common/src/main/kotlin/com/deliveryhero/dynamicpricing/workspace/common/pricing/mov/MovConfigurationService.kt",
+          "pattern": "*",
+          "owners": [
+            "@deliveryhero/dps-workspace",
+            "@deliveryhero/dps-api",
+            "@deliveryhero/dps-optimization"
+          ]
+        },
+        {
+          "file": "workspace-common/src/main/kotlin/com/deliveryhero/dynamicpricing/workspace/common/pricing/traveltime/TravelTimeFeeConfigurationService.kt",
+          "pattern": "*",
+          "owners": [
+            "@deliveryhero/dps-workspace",
+            "@deliveryhero/dps-api",
+            "@deliveryhero/dps-optimization"
+          ]
+        },
+        {
+          "file": "workspace-common/src/test/kotlin/com/deliveryhero/dynamicpricing/workspace/common/pricing/mov/MovConfigurationServiceTest.kt",
+          "pattern": "*",
+          "owners": [
+            "@deliveryhero/dps-workspace",
+            "@deliveryhero/dps-api",
+            "@deliveryhero/dps-optimization"
+          ]
+        }
+      ]
+    },
+    "aiReview": null
+  }
+]
