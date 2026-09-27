@@ -1,0 +1,27 @@
+src/format.mjs
+  s_6941d5f8136cbe::t_c6ab35fe5b43c7 118-120
+src/run.mjs
+  s_6941d5f8136cbe::t_af72569ed189d0 88,91-92
+src/context.mjs
+  s_6941d5f8136cbe::t_0043b672444033 3-84,86-89,91-118,120,123-127,130-139,142-144,146,149,153-159,165-166,169,179,189,193
+src/rules/domain-knowledge.json
+  s_6941d5f8136cbe::t_2fed09f38b81e0 1-75
+src/rules/platform-invariants.json
+  s_6941d5f8136cbe::t_59d849322f0ae3 1-36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "d63a1d54926acf23b4365c326fe176cabb202a3d",
+  "prompts": {},
+  "sessions": {
+    "s_6941d5f8136cbe": {
+      "agent_id": {
+        "tool": "gemini",
+        "id": "75797c3d-2841-4596-b24b-7abb7e1b4406",
+        "model": "gemini-3.5-flash"
+      },
+      "human_author": "Pradnya Tukaram Shelar <pradnya.shelar@deliveryhero.com>"
+    }
+  }
+}
