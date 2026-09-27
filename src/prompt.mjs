@@ -1,6 +1,12 @@
+// src/prompt.mjs
+//
+// Layer 2: Analysis Swarm & Prompt Specification.
+// Defines the structured review tool schema and prompt generation incorporating
+// Team Memory (Layer 1) and Risk Routing (Layer 3).
+
 export const WALKTHROUGH_TOOL = {
-  name: "submit_walkthrough",
-  description: "Submit the structured PR review walkthrough.",
+  name: "submit_review",
+  description: "Submit a structured PR review walkthrough, risk assessment, and verification list. Always call this tool.",
   input_schema: {
     type: "object",
     properties: {
@@ -29,46 +35,76 @@ export const WALKTHROUGH_TOOL = {
         description:
           "A single Mermaid 'flowchart TD' diagram (code only, no ``` fences) showing how data flows through the changed code: entry points, the functions/modules touched, and where it terminates (DB write, API response, queue publish, etc). Max ~15 nodes. Use short node labels. IMPORTANT: Always wrap node text in double quotes if it contains parentheses, colons, or punctuation (e.g. A[\"Scheduler: fetch()\"] or B{\"Check: isEnabled?\"}) so GitHub's Mermaid renderer does not fail.",
       },
-      focus_points: {
+      blocking: {
         type: "array",
-        maxItems: 3,
-        description:
-          "Up to 3 highest-risk lines in this diff, ranked most severe first. Only include real, specific risks visible in the diff — do not pad to 3 if fewer exist.",
+        description: "Issues that should block merge: race conditions, null/undefined crashes, unhandled errors, security vulnerabilities, or violations of team rules in the supplied repo context. Empty array if none.",
         items: {
           type: "object",
+          required: ["file", "line", "issue"],
           properties: {
-            file: { type: "string", description: "Repo-relative file path exactly as it appears in the diff." },
+            file: { type: "string", description: "Repo-relative file path." },
             line: { type: "integer", description: "Line number in the NEW version of the file." },
-            risk_type: {
-              type: "string",
-              enum: ["race_condition", "null_undefined", "unhandled_error", "resource_leak", "other"],
-            },
-            reason: {
-              type: "string",
-              description: "One or two sentences: the concrete failure scenario (what input/timing triggers it, what breaks).",
-            },
+            issue: { type: "string", description: "Specific, concrete failure scenario." },
           },
-          required: ["file", "line", "risk_type", "reason"],
+        },
+      },
+      should_fix: {
+        type: "array",
+        description: "Real issues or code smells that do not strictly block merge but should be addressed before production release.",
+        items: {
+          type: "object",
+          required: ["file", "line", "issue"],
+          properties: {
+            file: { type: "string", description: "Repo-relative file path." },
+            line: { type: "integer", description: "Line number in the NEW version of the file." },
+            issue: { type: "string", description: "Specific suggestion and rationale." },
+          },
+        },
+      },
+      nice_to_have: {
+        type: "array",
+        description: "Optional minor polish suggestions or style nits. Keep this short.",
+        items: { type: "string" },
+      },
+      verified: {
+        type: "array",
+        description:
+          "What you checked and confirmed safe (e.g. 'error handling on the new API call', 'database connection timeout configured', 'thread safety of the cache store'). This tells the human reviewer what they can skip re-checking.",
+        items: { type: "string" },
+      },
+      suggested_rules: {
+        type: "array",
+        description:
+          "Optional compounding loop: if you noticed a recurring anti-pattern or convention worth remembering for future PRs, suggest a 1-sentence bullet to add to AGENTS.md or pr-rules.",
+        items: {
+          type: "object",
+          required: ["rules_file", "bullet"],
+          properties: {
+            rules_file: { type: "string", description: "Target file, e.g. 'AGENTS.md' or '.claude/pr-rules/common.md'." },
+            bullet: { type: "string", description: "1-sentence imperative rule." },
+          },
         },
       },
     },
-    required: ["repo_context", "summary", "mermaid_diagram", "focus_points"],
+    required: ["repo_context", "summary", "mermaid_diagram", "blocking", "should_fix", "nice_to_have", "verified"],
   },
 };
 
 export function buildSystemPrompt() {
-  return `You are an expert code reviewer generating a "Smart Reviewer Walkthrough" — a fast-orientation aid designed for an Engineering Manager (EM) who has 60 seconds to understand the pull request and evaluate operational risk without being deeply familiar with the codebase.
+  return `You are an expert senior code reviewer generating a "Smart Reviewer Walkthrough" — a structured orientation aid for an Engineering Manager (EM) who has 60 seconds to understand the PR, assess blast radius, and identify operational risks without being deeply familiar with the codebase.
 
 Rules:
-- Provide an accurate, high-level architectural orientation in repo_context: describe the service's role, its position in the delivery platform, and the blast radius / operational risk lens for an EM.
+- Provide an accurate, high-level architectural orientation in repo_context: describe the service's role, its tier, and the operational blast radius for an EM.
+- Respect Team Memory rules supplied in the prompt: if the diff violates any rule from AGENTS.md or pr-rules, flag it under 'blocking'.
 - Base every code claim strictly on the diff provided. Never invent files, functions, or behavior not shown.
 - The summary must be exactly 3 sentences and avoid jargon a non-specialist engineer wouldn't know.
-- The Mermaid diagram must be valid 'flowchart TD' syntax and reflect only the actual data flow touched by this diff, not the whole system. Always wrap node labels in double quotes if they contain parentheses, colons, or punctuation (e.g. A["task()"]).
-- focus_points must call out genuine race-condition, null/undefined, unhandled-error, or resource-leak risks — concrete ones, not generic reminders like "add tests" or "consider edge cases". If the diff has no such risks, return an empty array.
-- Always respond by calling the submit_walkthrough tool. Do not respond in plain text.`;
+- The Mermaid diagram must be valid 'flowchart TD' syntax. Always wrap node labels in double quotes if they contain parentheses, colons, or punctuation (e.g. A["task()"]).
+- 'verified' is high-value: explicitly list what was checked and found clean so the human reviewer knows what they can skip.
+- If a new convention or anti-pattern is spotted, propose a candidate rule in 'suggested_rules' to close the compounding team learning loop.
+- Always respond by calling the submit_review tool. Do not respond in plain text.`;
 }
 
-export function buildUserPrompt({ repoInfo, prTitle, prBody, diffText, truncated, omittedFiles }) {
+export function buildUserPrompt({ repoInfo, teamMemory, riskEvaluation, prTitle, prBody, diffText, truncated, omittedFiles }) {
   const parts = [];
 
   if (repoInfo) {
@@ -77,6 +113,24 @@ export function buildUserPrompt({ repoInfo, prTitle, prBody, diffText, truncated
       repoInfo.description ? `Repository Description: ${repoInfo.description}` : "",
       repoInfo.language ? `Primary Language: ${repoInfo.language}` : "",
       repoInfo.topics?.length ? `Topics: ${repoInfo.topics.join(", ")}` : "",
+      ""
+    );
+  }
+
+  if (teamMemory && teamMemory.text) {
+    parts.push(
+      "================================================================================",
+      "### Codebase Team Memory & Rules (from AGENTS.md / CLAUDE.md)",
+      "================================================================================",
+      teamMemory.text,
+      ""
+    );
+  }
+
+  if (riskEvaluation) {
+    parts.push(
+      `Risk Gate: ${riskEvaluation.riskLevel} Risk | Recommendation: ${riskEvaluation.recommendation}`,
+      riskEvaluation.reasons?.length ? `Triggers: ${riskEvaluation.reasons.join("; ")}` : "",
       ""
     );
   }
