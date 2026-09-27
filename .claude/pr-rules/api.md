@@ -22,3 +22,16 @@ These guidelines are synthesized directly from 112 code reviews across 91 pull r
 ## 5. DTO & Protobuf Mappers
 - **Mapper Purity:** Mappers (`ProtoToDtos`, etc.) must remain pure data transformations. Do not embed business validation rules or conditional discard branches inside mapper classes; place validation on the caller/service side.
 - **External IDs:** Model subscription and external entity IDs as `String`, not internal database auto-increment keys.
+
+## 6. Controller Architecture & Exception Handling
+- **Centralized Handlers:** Controllers must never return ad-hoc `internalServerError()` or raw 500 JSON bodies. Throw domain exceptions and let centralized `@ControllerAdvice` (`ApiExceptionHandler`) format responses and HTTP codes.
+
+## 7. Subscription Component Isolation
+- **Override Boundaries:** Subscription and loyalty discounts must strictly apply only to eligible fee components (e.g. delivery fee waivers) and never cascade blindly across independent overrides like Meal-For-One (MFO) or Minimum-Order-Value (MOV).
+
+## 8. Metric Span Preservation
+- **I/O Observability:** When refactoring service methods or pulling logic down into helpers, ensure external I/O (database lookups, Redis calls, S3 fetches) remains enclosed within an active `metricsCollector.observe {}` timer so p99 observability is never silently dropped.
+
+## 9. Configuration & Deployment Drift
+- **Helm Secret Alignment:** Any new environment variable or secret referenced in `application.yml` or `bootstrap.yml` must be documented and mapped in `logistics-kubernetes` Helm charts before merging.
+- **Deprecation Grace Period:** Never immediately remove or rename existing fields from public DTOs. Annotate with `@Deprecated`, maintain backward-compatible getters, and allow downstream clients a deprecation window.

@@ -116,6 +116,36 @@
       "topic": "Flag Test Naming Conventions",
       "rule": "Unit and integration tests covering feature-flagged paths must explicitly indicate the flag state in the test method name (e.g. `when<FeatureFlag>IsOff_returnsFallback()`).",
       "triggers": ["test", "testCase", "@Test"]
+    },
+    {
+      "id": "REV-007",
+      "topic": "Centralized Controller Exception Handling",
+      "rule": "Controllers must never return ad-hoc internalServerError() or raw 500 JSON responses. Throw domain exceptions and let centralized @ControllerAdvice (ApiExceptionHandler) format the response and status code.",
+      "triggers": ["Controller", "internalServerError", "status", "ResponseEntity", "ExceptionHandler"]
+    },
+    {
+      "id": "REV-008",
+      "topic": "Subscription Component Isolation",
+      "rule": "Subscription and loyalty discounts must strictly apply only to eligible fee components (e.g. delivery fee waivers) and never cascade blindly across independent overrides like Meal-For-One (MFO) or Minimum-Order-Value (MOV).",
+      "triggers": ["subscriber", "subscription", "override", "mfo", "mov", "incentive"]
+    },
+    {
+      "id": "REV-009",
+      "topic": "I/O Metric Span Preservation",
+      "rule": "When refactoring or pulling down service methods, ensure that external I/O operations (database queries, Redis calls, S3 fetches) remain enclosed inside an active metric Timer / span to prevent losing latency observability.",
+      "triggers": ["observe", "Timer", "latency", "metrics", "findById", "store", "client"]
+    },
+    {
+      "id": "REV-010",
+      "topic": "Environment & Helm Chart Alignment",
+      "rule": "Any new environment variable or secret referenced in application.yml or bootstrap.yml must be mapped in logistics-kubernetes Helm charts before merging to avoid staging pod startup failures.",
+      "triggers": ["application.yml", "bootstrap.yml", "${", "env", "Secret", "ConfigMap"]
+    },
+    {
+      "id": "REV-011",
+      "topic": "DTO Field Deprecation Grace Period",
+      "rule": "Never immediately remove or rename existing fields from public DTOs or API contracts in a single release. Annotate with @Deprecated, preserve backwards-compatible getters, and give downstream clients a deprecation window.",
+      "triggers": ["dto", "Deprecated", "field", "response", "contract", "remove"]
     }
   ]
 }
