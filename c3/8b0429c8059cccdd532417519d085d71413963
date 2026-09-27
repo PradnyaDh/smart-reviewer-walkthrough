@@ -1,0 +1,52 @@
+src/claude.mjs
+  s_4e4bd15b930ee5::t_29b79f80b55533 1,5-12,14-34,36,49
+examples/consumer-workflow.yml
+  s_4e4bd15b930ee5::t_8ed77b1265b1e3 26-31
+action.yml
+  s_4e4bd15b930ee5::t_a68c3abcf27338 46-48
+  s_4e4bd15b930ee5::t_9f73071fbd929d 9,11-19
+scripts/cli.mjs
+  s_4e4bd15b930ee5::t_d188b4c177f889 1-6,13-16,18-31,35-43,45,52-61,63-109,135-141
+  s_6941d5f8136cbe::t_f8889bbe9dc984 7-12,17,32-34,44,46-51,62,110-134
+src/github.mjs
+  s_4e4bd15b930ee5::t_f91151335e1bc0 1-18
+src/run.mjs
+  s_4e4bd15b930ee5::t_c90acb0fca5df5 1-64
+README.md
+  s_4e4bd15b930ee5::t_67b960671b84cb 35-59
+  s_4e4bd15b930ee5::t_3b508727d91f15 69-70
+src/index.mjs
+  s_4e4bd15b930ee5::t_7647242c68da5b 3,24-25,28-32,36-38
+  s_4e4bd15b930ee5::t_a5835a722cd6b7 8-10
+  s_4e4bd15b930ee5::t_7518bf3976902d 33-34
+package.json
+  s_4e4bd15b930ee5::t_ae63c596ea5360 8-9
+scripts/local-test.mjs
+  s_4e4bd15b930ee5::t_aff261d822d121 1-34
+.github/workflows/smart-reviewer-walkthrough.yml
+  s_4e4bd15b930ee5::t_0863789b0698ad 21,24-26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "c38b0429c8059cccdd532417519d085d71413963",
+  "prompts": {},
+  "sessions": {
+    "s_4e4bd15b930ee5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f20963f2-c83d-4055-930b-7d93ef6ff580",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Pradnya Tukaram Shelar <pradnya.shelar@deliveryhero.com>"
+    },
+    "s_6941d5f8136cbe": {
+      "agent_id": {
+        "tool": "gemini",
+        "id": "75797c3d-2841-4596-b24b-7abb7e1b4406",
+        "model": "gemini-3.5-flash"
+      },
+      "human_author": "Pradnya Tukaram Shelar <pradnya.shelar@deliveryhero.com>"
+    }
+  }
+}
