@@ -1,0 +1,20 @@
+README.md
+  s_6941d5f8136cbe::t_f57f38251e2c90 3,14,19-22,36,44-80,93-95,100,105-116,164,166,181-185,202,204,216-226
+  s_6941d5f8136cbe::t_69330339bb15eb 227
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "fd06d570cc0d5ebb338732edf7d43392e9151530",
+  "prompts": {},
+  "sessions": {
+    "s_6941d5f8136cbe": {
+      "agent_id": {
+        "tool": "gemini",
+        "id": "75797c3d-2841-4596-b24b-7abb7e1b4406",
+        "model": "gemini-3.5-flash"
+      },
+      "human_author": "Pradnya Tukaram Shelar <pradnya.shelar@deliveryhero.com>"
+    }
+  }
+}
