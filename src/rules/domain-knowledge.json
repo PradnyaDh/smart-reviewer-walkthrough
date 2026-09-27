@@ -198,6 +198,42 @@
       "triggers": ["useEffect", "useCallback", "dependency", "deps"]
     },
     {
+      "id": "DASH-004",
+      "topic": "Feature Flag Fallbacks",
+      "rule": "Any component reading feature flags via useFlag must define an explicit fallback state in case the FwF network request fails.",
+      "triggers": ["useFlag", "FeatureFlag", "flag", "fallback"]
+    },
+    {
+      "id": "DASH-005",
+      "topic": "Timezone & Locale Isolation",
+      "rule": "Use explicit Luxon IANA timezone definitions or moment-timezone bundled data rather than relying on the host environment's native Intl API, and set explicit locales in tests.",
+      "triggers": ["timezone", "luxon", "moment", "Intl", "IANAZone"]
+    },
+    {
+      "id": "DASH-006",
+      "topic": "Search Filter Memoization",
+      "rule": "When filtering tables, lists, or combobox options, compute search.toLowerCase().trim() once outside the iteration loop; never re-evaluate inside .filter() callbacks.",
+      "triggers": ["toLowerCase", "filter", "searchFilter", "search"]
+    },
+    {
+      "id": "DASH-007",
+      "topic": "Numerical ID Nullish Checking",
+      "rule": "Never use !id or !!id when checking IDs, counts, or tier index parameters; always use explicit nullish checks (id != null) because 0 is a valid identifier.",
+      "triggers": ["!id", "!!id", "id ==", "id !="]
+    },
+    {
+      "id": "DASH-008",
+      "topic": "Combobox Fallback Options",
+      "rule": "Combobox and Autocomplete components must provide a fallback empty array (options = []) to prevent runtime crashes when asynchronous queries return undefined.",
+      "triggers": ["Combobox", "Autocomplete", "options", "select"]
+    },
+    {
+      "id": "DASH-009",
+      "topic": "Deterministic Test Waiting",
+      "rule": "Never use arbitrary setTimeout delays in test suites. Use deterministic React Testing Library waitFor or Jest fake timers.",
+      "triggers": ["setTimeout", "waitFor", "fakeTimers"]
+    },
+    {
       "id": "BACK-001",
       "topic": "JPA Entity Non-Nullable Primary Keys",
       "rule": "JPA entities must declare primary key IDs as non-nullable (val id: Long) to prevent Hibernate mapping ambiguities and NPEs during entity persistence.",
@@ -214,6 +250,48 @@
       "topic": "Audit Log Transactional Consistency",
       "rule": "Mutating admin actions that generate pricing audit logs must execute inside the same @Transactional boundary as the main entity update to prevent orphaned audit records on rollback.",
       "triggers": ["@Transactional", "audit", "PricingAudit", "rollback", "save"]
+    },
+    {
+      "id": "BACK-004",
+      "topic": "Deprecated SQS Queue Removal",
+      "rule": "When deprecating SQS queue consumers, remove listener beans and container definitions from Helm charts before deleting the queue in AWS to avoid log spam and alarm triggers.",
+      "triggers": ["sqs", "queue", "listener", "SqsListener"]
+    },
+    {
+      "id": "BACK-005",
+      "topic": "S3 Batch Timezone Integrity",
+      "rule": "Always serialize zone timezones in exported S3 pricing configurations so campaigns can be loaded unambiguously into runtime cache.",
+      "triggers": ["s3", "precomputed", "dataset", "timezone"]
+    },
+    {
+      "id": "BACK-006",
+      "topic": "PostgreSQL Large In-List Performance",
+      "rule": "When querying PostgreSQL by large lists of identifiers (e.g. vendor IDs, zone IDs), use '= ANY(?)' with array bind parameters rather than dynamic 'IN (?, ?, ...)' clauses to avoid query plan cache bloat.",
+      "triggers": ["IN (", "= ANY", "vendorIds", "zoneIds", "query"]
+    },
+    {
+      "id": "BACK-007",
+      "topic": "Hibernate Lazy Class Finality",
+      "rule": "Ensure JPA entities and their getter methods are non-final (via open or the Kotlin all-open Spring plugin) to prevent 'HibernateException: Getter methods of lazy classes cannot be final'.",
+      "triggers": ["open class", "final", "HibernateException", "lazy"]
+    },
+    {
+      "id": "BACK-008",
+      "topic": "Transactional Event Publishing",
+      "rule": "Domain events published from inside @Transactional methods must use @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT) so events are never broadcast if database rollbacks occur.",
+      "triggers": ["@TransactionalEventListener", "AFTER_COMMIT", "publishEvent", "eventPublisher"]
+    },
+    {
+      "id": "BACK-009",
+      "topic": "Fail-Safe Bootstrapping",
+      "rule": "Application startup must not fail due to a single invalid country or zone configuration value. Log a clear WARN with the affected entity ID and fall back to safe default operational limits.",
+      "triggers": ["startup", "bootstrap", "init", "validateConfig"]
+    },
+    {
+      "id": "BACK-010",
+      "topic": "STS Sidecar Caching & Jitter",
+      "rule": "When authenticating with downstream AWS services, retrieve tokens from the local STS sidecar with jittered in-memory caching to prevent synchronized token expiration spikes.",
+      "triggers": ["sts", "token", "sidecar", "credentials"]
     }
   ]
 }
