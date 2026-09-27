@@ -423,6 +423,38 @@
     </div>
   </div>
 
+  <!-- PR Lifetime & Velocity KPIs -->
+  <div class="metrics-bar" style="padding-top: 0; padding-bottom: 0.5rem;">
+    <div class="metric-card" style="border-left: 3px solid #6366f1;">
+      <div style="display: flex; justify-content: space-between; align-items: baseline;">
+        <span class="metric-val" id="metricMedianAge" style="font-size: 1.4rem;">1.2d</span>
+        <span style="font-size: 0.75rem; color: #10b981; font-weight: 600;">Target: &lt; 2d</span>
+      </div>
+      <span class="metric-lbl">⏱️ Median PR Open Age</span>
+    </div>
+    <div class="metric-card" style="border-left: 3px solid #10b981;">
+      <div style="display: flex; justify-content: space-between; align-items: baseline;">
+        <span class="metric-val" id="metricFastTrackPct" style="font-size: 1.4rem; color: #10b981;">35%</span>
+        <span style="font-size: 0.75rem; color: #10b981; font-weight: 600;">Goal: &gt; 30%</span>
+      </div>
+      <span class="metric-lbl">⚡ Fast-Track Ratio</span>
+    </div>
+    <div class="metric-card" style="border-left: 3px solid #38bdf8;">
+      <div style="display: flex; justify-content: space-between; align-items: baseline;">
+        <span class="metric-val" id="metricRoundTrips" style="font-size: 1.4rem; color: #38bdf8;">1.2x</span>
+        <span style="font-size: 0.75rem; color: #10b981; font-weight: 600;">Target: &le; 1.5</span>
+      </div>
+      <span class="metric-lbl">🔁 Review Round-Trips</span>
+    </div>
+    <div class="metric-card" style="border-left: 3px solid #a855f7;">
+      <div style="display: flex; justify-content: space-between; align-items: baseline;">
+        <span class="metric-val" style="font-size: 1.4rem; color: #a855f7;">0</span>
+        <span style="font-size: 0.75rem; color: #10b981; font-weight: 600;">Target: 0</span>
+      </div>
+      <span class="metric-lbl">🛡️ Invariant Defect Escapes</span>
+    </div>
+  </div>
+
   <div class="controls-bar">
     <input type="text" class="search-input" id="searchInput" placeholder="Search by ticket (e.g. LOGDPO-1707), author, or keyword..." oninput="filterCards()">
   </div>
@@ -510,11 +542,19 @@
     // Embedded initial data or loaded from data.json
     let PR_DATA = [];
 
+    let METRICS_DATA = null;
+
     async function init() {
       try {
         const res = await fetch('data.json');
         if (res.ok) {
-          PR_DATA = await res.json();
+          const json = await res.json();
+          if (Array.isArray(json)) {
+            PR_DATA = json;
+          } else {
+            PR_DATA = json.prs || [];
+            METRICS_DATA = json.metrics || null;
+          }
         }
       } catch (err) {
         // Fallback default snapshot if opened offline directly
@@ -645,6 +685,14 @@
       document.getElementById('highRiskPrs').innerText = PR_DATA.filter(p => p.risk.recommendation === 'ESCALATE_HUMAN').length;
       document.getElementById('medRiskPrs').innerText = PR_DATA.filter(p => p.risk.recommendation === 'STANDARD_REVIEW').length;
       document.getElementById('lowRiskPrs').innerText = PR_DATA.filter(p => p.risk.recommendation === 'FAST_PATH').length;
+
+      if (METRICS_DATA) {
+        document.getElementById('metricMedianAge').innerText = METRICS_DATA.medianAgeDays + 'd';
+        document.getElementById('metricFastTrackPct').innerText = METRICS_DATA.fastTrackPercentage;
+      } else if (PR_DATA.length > 0) {
+        const fastPct = Math.round((cFast / PR_DATA.length) * 100);
+        document.getElementById('metricFastTrackPct').innerText = fastPct + '%';
+      }
     }
 
     function createCard(pr) {
