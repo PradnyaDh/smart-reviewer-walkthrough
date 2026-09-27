@@ -110,6 +110,22 @@ export async function loadRepoContext({ owner, repo, ref, changedFiles = [], dif
       }
     }
 
+    const matchedLearnings = (domainKnowledge.teamReviewLearnings || []).filter((item) => {
+      return item.triggers.some((trigger) => combinedSearchText.includes(trigger.toLowerCase()));
+    });
+
+    if (matchedLearnings.length > 0) {
+      tiersLoaded.push(`Review Standards (${matchedLearnings.map((l) => l.id).join(", ")})`);
+      domainLines.push(
+        "",
+        "**Recurring Code Review Standards (Learned from 3-Month DPS Reviews):**",
+        ""
+      );
+      for (const l of matchedLearnings) {
+        domainLines.push(`- **[${l.id} - ${l.topic}]**: ${l.rule}`);
+      }
+    }
+
     sections.push(domainLines.join("\n"));
   }
 

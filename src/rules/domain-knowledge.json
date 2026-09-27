@@ -1,14 +1,22 @@
 {
   "domain": "Logistics & Customer Pricing (CPL)",
-  "version": "1.0",
+  "version": "1.1",
   "serviceCatalog": {
     "logistics-dynamic-pricing": {
-      "name": "Dynamic Pricing Service (DPS)",
+      "name": "Dynamic Pricing Service (DPS - Supporting & Admin)",
       "tier": "Tier 2 Critical Path",
       "squad": "Customer Pricing Squad",
       "role": "Calculates dynamic delivery fees, rider surcharges, and customer subscription discounts across APAC, Europe, and Middle East platforms via gRPC & REST.",
       "techStack": "Kotlin, Spring Boot, PostgreSQL, AWS EKS, SQS, Kafka, Valkey/Redis, S3",
       "dependencies": ["Per-country PostgreSQL RDS", "FeaturesWithFriends (FwF)", "S3 Precomputed Price Rules", "Customer Delivery Platform (CDP)"]
+    },
+    "logistics-dynamic-pricing-api": {
+      "name": "Dynamic Pricing API & Fallback Service",
+      "tier": "Tier 1 Critical Path",
+      "squad": "Customer Pricing Squad",
+      "role": "Ultra-low-latency (<25ms) runtime pricing engine and standalone fallback service serving global checkout and cart calculations.",
+      "techStack": "Kotlin, Undertow, Kotlin Coroutines, Valkey / ElastiCache, FeaturesWithFriends (FwF)",
+      "dependencies": ["Valkey Caching", "FeaturesWithFriends (FwF)", "S3 Datasets", "Weather Service (LWS)", "CDP Gateway"]
     },
     "logistics-deliveryareas": {
       "name": "Delivery Area Service (DAS)",
@@ -70,6 +78,44 @@
       "sourceIncident": "#3681 (Bulgaria Missing Audit Log Incident)",
       "rule": "When modifying pricing audit log structures, ensure logging pipelines maintain non-zero event throughput and do not swallow parsing exceptions silently.",
       "triggers": ["auditLog", "audit", "fluentbit", "logEntry", "PricingAudit"]
+    }
+  ],
+  "teamReviewLearnings": [
+    {
+      "id": "REV-001",
+      "topic": "Early Feature Flag Evaluation",
+      "rule": "Evaluate feature flags at the very start of service methods to enable early return and bypass redundant database or Valkey cache lookups when a feature is disabled.",
+      "triggers": ["isEnabled", "featureFlag", "capping", "evaluator", "service"]
+    },
+    {
+      "id": "REV-002",
+      "topic": "Fallback Service Parity",
+      "rule": "When adding or modifying pricing schemes or override rules in the primary API, explicitly state and implement the expected behavior in the Fallback service (e.g. default base fee or zero discounts).",
+      "triggers": ["fallback", "resolver", "override", "pricingService", "calculation"]
+    },
+    {
+      "id": "REV-003",
+      "topic": "Prometheus Metric Cardinality",
+      "rule": "Never include high-cardinality or unbounded identifiers (e.g. customer IDs, order IDs, vendor lists, or unbounded configuration keys) as Prometheus tags or metric names to prevent Prometheus scraping OOMs.",
+      "triggers": ["metric", "prometheus", "tag", "counter", "timer", "gauge", "histogram"]
+    },
+    {
+      "id": "REV-004",
+      "topic": "DTO & Proto Mapper Purity",
+      "rule": "DTO, Proto, and domain model mappers must remain pure transformation functions; do not embed business rules, validation logic, or conditional discards inside mapper classes.",
+      "triggers": ["mapper", "protoToDto", "toDto", "toEntity", "fromProto"]
+    },
+    {
+      "id": "REV-005",
+      "topic": "Parallel Coroutine Kill-Switch",
+      "rule": "Any parallelized asynchronous processing (e.g. concurrent vendor price calculations using coroutines) must include a feature flag kill-switch to revert to sequential execution under thread pool saturation.",
+      "triggers": ["async", "coroutine", "parallel", "supervisorScope", "awaitAll"]
+    },
+    {
+      "id": "REV-006",
+      "topic": "Flag Test Naming Conventions",
+      "rule": "Unit and integration tests covering feature-flagged paths must explicitly indicate the flag state in the test method name (e.g. `when<FeatureFlag>IsOff_returnsFallback()`).",
+      "triggers": ["test", "testCase", "@Test"]
     }
   ]
 }
