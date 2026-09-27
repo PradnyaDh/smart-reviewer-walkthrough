@@ -1,6 +1,6 @@
 # 🧭 Smart Reviewer Walkthrough
 
-An AI-assisted code review engine and GitHub Action built on a **3-Layer Architecture** (Team Memory, Analysis Swarm, and Deterministic Risk Routing). Designed for Tech Leads, Senior Engineers, and Developers, it provides rapid 60-second PR orientation, maps architecture and blast radius across unfamiliar codebases, flags runtime failure modes, and certifies safe paths without replacing human accountability.
+An AI-assisted code review engine and GitHub Action built on a **3-Layer Architecture** (Cascading Team Memory, Analysis Swarm, and Deterministic Risk Routing). Designed for Tech Leads, Senior Engineers, and Developers, it provides rapid 60-second PR orientation, maps architecture and blast radius across unfamiliar codebases, flags runtime failure modes, and certifies safe paths without replacing human accountability.
 
 ```
                           ┌────────────────────────┐
@@ -11,14 +11,15 @@ An AI-assisted code review engine and GitHub Action built on a **3-Layer Archite
               │  LAYER 3: Risk Router & Deterministic Gate     │
               │  • Diff Size (>500 LoC / >20 files)            │
               │  • Sensitive Deny-List (pricing, auth, schema) │
+              │  • CODEOWNERS & Git-Commit Reviewer Routing    │
               │  • Fast-Path vs. Escalate-to-Human Verdict     │
               └───────────────────────┬────────────────────────┘
                                       │
               ┌───────────────────────▼────────────────────────┐
-              │  LAYER 1: Team Memory (Context Injector)       │
-              │  • Scoped AGENTS.md / CLAUDE.md                │
-              │  • Per-service rules (.claude/pr-rules/*.md)   │
-              │  • Invariant "Do-Not-Touch" Constraints        │
+              │  LAYER 1: 3-Tier Cascading Team Memory         │
+              │  • Tier 1: Universal Platform Invariants       │
+              │  • Tier 2: Domain Memory & Outage Guardrails   │
+              │  • Tier 3: Scoped Repo Rules (Remote GitHub)   │
               └───────────────────────┬────────────────────────┘
                                       │
               ┌───────────────────────▼────────────────────────┐
@@ -32,6 +33,7 @@ An AI-assisted code review engine and GitHub Action built on a **3-Layer Archite
               │  OUTPUT: Structured Verdict & Compounding Loop │
               │  • Blocking / Should Fix / Verified            │
               │  • Candidate Rule Proposal for AGENTS.md       │
+              │  • Interactive Local Standup Web Dashboard     │
               └────────────────────────────────────────────────┘
 ```
 
@@ -39,10 +41,43 @@ An AI-assisted code review engine and GitHub Action built on a **3-Layer Archite
 
 ## 🏛️ The Three Architectural Layers
 
-### 1. Layer 1: Codified Team Memory (`src/context.mjs`)
-* Dynamically inspects the PR's touched file paths and queries the GitHub Contents API for `AGENTS.md`, `CLAUDE.md`, or scoped `.claude/pr-rules/*.md` files without requiring a local checkout.
-* The model reviews against **actual codebase conventions, anti-patterns, and deprecated paths** rather than generic lint advice.
-* Transparently displays loaded context files in the review footer.
+### 1. Layer 1: 3-Tier Cascading Team Memory (`src/context.mjs`)
+Rather than relying solely on generic lint advice or dumping monolith rule files into LLM prompts, Layer 1 executes a **3-tier context cascade**:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ TIER 1: Platform Engineering Invariants                         │
+│ File: src/rules/platform-invariants.json                        │
+│ • [INV-001]: Concurrency & thread-safe stores (ConcurrentMap).  │
+│ • [INV-002]: Feature flag explicit safe fallbacks.              │
+│ • [INV-003]: SQL parameterized bind parameters only.            │
+│ • [INV-004]: Kafka/Protobuf wire-compatibility (optional tags). │
+│ • [INV-005]: Cron & Kafka boundary error handling / metrics.    │
+└────────────────────────────────┬────────────────────────────────┘
+                                 │
+┌────────────────────────────────▼────────────────────────────────┐
+│ TIER 2: Domain Memory & Postmortem Guardrails                   │
+│ File: src/rules/domain-knowledge.json                           │
+│ • DevHub Architectural Catalog (DPS, DAS, Tracking API, etc.)   │
+│ • [PM-6946]: Assert delivery_fee >= 0 (PH outage guardrail).    │
+│ • [PM-6561]: Weather surge multiplier watchdog (Ukraine fail).  │
+│ • [PM-6990]: Subscription fee waiver continuity (SG pandapro).  │
+│ • [PM-3838]: S3 precomputed dataset path sync (Woowa Korea).    │
+│ • [PM-3681]: Audit log zero-throughput watchdogs (Bulgaria).    │
+└────────────────────────────────┬────────────────────────────────┘
+                                 │
+┌────────────────────────────────▼────────────────────────────────┐
+│ TIER 3: Scoped Target Repo Memory                               │
+│ Fetched dynamically from target repo on GitHub                  │
+│ • AGENTS.md / CLAUDE.md                                         │
+│ • Path-scoped rules: .claude/pr-rules/<module>.md               │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+* **Never Runs Blind:** Even if a repository lacks an `AGENTS.md`, Tiers 1 and 2 provide immediate platform safety and domain guardrails.
+* **Transparent Attribution:** Reviews cite the exact rules evaluated in their footer (e.g. `📚 Evaluated against Team Memory: Platform Invariants • Service Catalog • Incident Guardrails (PM-6990)`).
+
+---
 
 ### 2. Layer 2: Analysis Swarm & Structured Verdict (`src/prompt.mjs`, `src/format.mjs`)
 Replaces flat risk lists with a structured engineering taxonomy:
@@ -55,12 +90,27 @@ Replaces flat risk lists with a structured engineering taxonomy:
 * **✅ Verified (Skip Manual Re-Checking):** **Highest leverage section for human reviewers.** Explicitly certifies what was checked and confirmed safe so the reviewer doesn't waste time re-checking it.
 * **📝 Suggested Rule Additions (Compounding Loop):** When the reviewer catches a new pattern, it drafts a 1-sentence rule to commit to `AGENTS.md`, compounding team judgment over time.
 
-### 3. Layer 3: Deterministic Risk Router & Gate (`src/router.mjs`)
+---
+
+### 3. Layer 3: Deterministic Risk Router & Smart CODEOWNERS (`src/router.mjs`, `src/codeowners.mjs`)
 Modeled after PostHog's *StampHog* and Morgan Stanley's *DDRA*:
 * Runs **before calling any LLM** to save cost and enforce hard invariants.
 * Evaluates diff size ceilings (<150 lines for fast-path; >500 lines or >20 files for escalation).
 * Screens against a sensitive blast-radius deny-list: `pricing`, `fee`, `auth`, `secret`, `migration`, `schema`, `public-api`, `ingress`.
+* **Smart Reviewer Routing:** Inspects `CODEOWNERS` (or falls back to git-commit familiarity) to recommend the exact owning squad or senior engineers who should review the PR.
 * Outputs a deterministic gate verdict: `🟢 LOW RISK (FAST_PATH)`, `🟡 MEDIUM RISK`, or `🔴 HIGH RISK (ESCALATE_HUMAN)`.
+
+---
+
+## 📚 Pre-Built Codified Rule Catalogs (36 Rules from 3,462 Reviews)
+
+The engine includes pre-codified rule catalogs extracted from **3,462 real human code reviews across 2025 and 2026**:
+
+| Guideline Catalog | Coverage & Source | Key Invariants Enforced |
+| :--- | :--- | :--- |
+| **`.claude/pr-rules/api.md`** | **13 Rules**<br>*(320 reviews in `dynamic-pricing-api`)* | • Early feature flag checks before cache lookups (`REV-001`)<br>• Fallback service parity (`REV-002`)<br>• Strict `BigDecimal` precision; no Float/Double (`REV-012`)<br>• Revenue protection on upstream nulls ("free money" bug) (`REV-013`)<br>• Prometheus tag cardinality bounding (`REV-003`) |
+| **`.claude/pr-rules/backend.md`** | **12 Rules**<br>*(1,858 reviews in `dynamic-pricing`)* | • Non-nullable JPA primary keys (`BACK-001`)<br>• Liquibase migration immutability & rollback blocks (`BACK-002`)<br>• Spring Security `@PreAuthorize` on Admin endpoints (`BACK-003`)<br>• PostgreSQL `= ANY(?)` array queries over dynamic `IN` (`BACK-007`)<br>• Transactional event publishing (`@TransactionalEventListener`) (`BACK-010`) |
+| **`.claude/pr-rules/dashboard.md`** | **11 Rules**<br>*(1,284 reviews in `dashboard`)* | • No float casting on `big_decimal` strings (`DASH-001`)<br>• Explicit `undefined` on form clone ID stripping (`DASH-002`)<br>• Primitive hook dependencies in `useEffect` arrays (`DASH-003`)<br>• Search filter lowercase memoization outside loops (`DASH-006`)<br>• Numerical ID nullish checks (`id != null` vs `!!id`) (`DASH-007`) |
 
 ---
 
@@ -111,9 +161,9 @@ node scripts/cli.mjs owner/repo 123 --model gemini-3-5-flash --post
 
 ---
 
-## 📊 Sprint PR Triage & Batch Scanner (`scripts/batch-review.mjs`)
+## 📊 Sprint PR Triage & Interactive Web Dashboard (`scripts/batch-review.mjs`)
 
-For engineers and Tech Leads conducting sprint planning or daily PR triage, `scripts/batch-review.mjs` scans all open PRs across a target repository, runs deterministic risk screening, matches **CODEOWNERS**, and compiles a **PR Triage Matrix**:
+For daily PR standups and sprint planning, `scripts/batch-review.mjs` scans all open PRs across a target repository, runs deterministic risk screening, matches **CODEOWNERS**, and serves an interactive web board:
 
 ```bash
 # Fast triage of top 10 open PRs across the repository:
@@ -124,18 +174,15 @@ node scripts/batch-review.mjs deliveryhero/logistics-dynamic-pricing \
   --limit 10 \
   --post-issue PradnyaDh/smart-reviewer-walkthrough
 
-# Full AI scan on all open PRs (generates 3-sentence summaries for all):
-node scripts/batch-review.mjs deliveryhero/logistics-dynamic-pricing \
-  --limit 10 --full-ai --model gemini-3-5-flash
-
 # Launch the interactive local Web Dashboard at http://localhost:8787:
 node scripts/batch-review.mjs deliveryhero/logistics-dynamic-pricing --limit 10 --web
 ```
 
-The generated dashboard sorts PRs into:
-* 🟢 **Fast-Track Candidates:** Non-sensitive, compact diffs ready for rapid sign-off.
-* 🟡 **Standard Reviews:** Routine features and non-blocking updates.
-* 🔴 **High Blast-Radius:** Flags touching pricing, core calculations, auth, migrations, or large diffs with recommended reviewer squads automatically resolved from `CODEOWNERS` or git history.
+### 🎨 Web Dashboard Capabilities (`http://localhost:8787`):
+* **Visual Kanban Swimlanes:** Sorts PRs into 🔴 *High Blast-Radius*, 🟡 *Standard Reviews*, and 🟢 *Fast-Track Candidates*.
+* **Interactive PR Detail Drawer:** Click any PR card to inspect the 3-sentence summary, native interactive Mermaid flowchart, blocking bugs, and verified checklists.
+* **1-Click Slack Standup Digest:** Click **"📋 Copy Slack Standup Digest"** to copy formatted Slack markdown directly to your clipboard for morning team standups.
+* **Real-time Search:** Filter instantly by Jira ticket (e.g. `LOGDPO-1707`), author, or category.
 
 ---
 
@@ -152,8 +199,9 @@ The engine uses an Anthropic-compatible tool-calling interface (`/v1/messages`) 
 
 ---
 
-## ⚙️ CLI Reference (`scripts/cli.mjs`)
+## ⚙️ CLI Reference
 
+### `scripts/cli.mjs` (Single PR Review)
 | Option | Description |
 | :--- | :--- |
 | `<owner/repo> <pr-number>` | Target repository and Pull Request number (positional). |
@@ -164,6 +212,18 @@ The engine uses an Anthropic-compatible tool-calling interface (`/v1/messages`) 
 | `--issue-number <num>` | Updates an existing GitHub issue number instead of creating a duplicate. |
 | `--post` | Creates or updates the review comment on the source PR. |
 | `--max-diff-chars <n>` | Maximum diff characters sent to LLM before truncation (default: `60000`). |
+
+### `scripts/batch-review.mjs` (Sprint PR Triage & Dashboard)
+| Option | Description |
+| :--- | :--- |
+| `<owner/repo>` | Target repository to scan (positional). |
+| `--limit <n>` | Maximum number of PRs to scan (default: `10`). |
+| `--state <open\|closed\|all>`| State of pull requests to evaluate (default: `open`). |
+| `--web` | Starts the local HTTP server and opens the interactive dashboard at `http://localhost:8787`. |
+| `--port <num>` | Port to run the local web server on (default: `8787`). |
+| `--full-ai` | Runs full AI analysis swarms on all PRs in the batch. |
+| `--post-issue <owner/repo>`| Posts the Sprint Triage Matrix as an Issue in your personal tracking repo. |
+| `--issue-number <num>` | Updates an existing sprint triage issue number. |
 
 ---
 
@@ -193,28 +253,6 @@ jobs:
         with:
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           model: "gemini-3-5-flash"
-```
-
----
-
-## 📚 Codifying Team Memory (`AGENTS.md`)
-
-To make the reviewer aware of your team's specific standards, place an `AGENTS.md` file in the root of your repository (or in subdirectories):
-
-```markdown
-# AGENTS.md — Team Memory
-
-## Shared Resources — Check Before Building
-- Feature flags: Use `FeaturesWithFriends` client, never invent local toggle singletons.
-- Metrics: Wrap DB and external calls in `metricsCollector.observe {}`.
-
-## Architecture Rules
-- All new pricing endpoints must define a fallback flat-pricing strategy.
-- Cache stores must use thread-safe collections (`ConcurrentHashMap`).
-
-## Do-Not-Touch Without Approval
-- `public/src/main/kotlin/.../pricing/` — Delivery fee core calculations.
-- `src/main/resources/db/migration/` — Flyway database schemas.
 ```
 
 ---
