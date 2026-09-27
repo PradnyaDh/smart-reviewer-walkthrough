@@ -146,6 +146,30 @@
       "topic": "DTO Field Deprecation Grace Period",
       "rule": "Never immediately remove or rename existing fields from public DTOs or API contracts in a single release. Annotate with @Deprecated, preserve backwards-compatible getters, and give downstream clients a deprecation window.",
       "triggers": ["dto", "Deprecated", "field", "response", "contract", "remove"]
+    },
+    {
+      "id": "REV-012",
+      "topic": "Monetary Precision & Strict BigDecimal",
+      "rule": "All monetary fee amounts, discounts, and currency calculations must use BigDecimal and strict parser helpers (asStrictBigDecimal()), never Double or Float to prevent floating-point rounding errors on cents.",
+      "triggers": ["BigDecimal", "Double", "Float", "fee", "amount", "currency", "discount"]
+    },
+    {
+      "id": "REV-013",
+      "topic": "Revenue Protection on Upstream Nulls",
+      "rule": "When upstream dependency data (e.g. CDP customer loyalty or subscription state) returns null or times out, never default to applying discounts or free delivery waivers. The safe operational fallback is standard fee.",
+      "triggers": ["null", "fallback", "cdp", "discount", "isEligible", "waiver"]
+    },
+    {
+      "id": "REV-014",
+      "topic": "Dynamic Flags over Static Properties",
+      "rule": "Operational toggles, rollout percentages, and kill-switches should use dynamic feature flags (FeaturesWithFriends) rather than static application.conf/yml properties that require full pod redeployments to alter.",
+      "triggers": ["application.conf", "property", "toggle", "flag", "FeaturesWithFriends"]
+    },
+    {
+      "id": "REV-015",
+      "topic": "Range Boundary Validation & Testing",
+      "rule": "Value range objects (from..to) must validate 'from <= to' in an init {} block, and test suites must explicitly test boundary edges (e.g. exactly 0, boundary values, and negative limits).",
+      "triggers": ["range", "boundary", "from", "to", "threshold", "test"]
     }
   ]
 }

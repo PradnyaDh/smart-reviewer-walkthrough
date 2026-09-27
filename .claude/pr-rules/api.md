@@ -35,3 +35,15 @@ These guidelines are synthesized directly from 112 code reviews across 91 pull r
 ## 9. Configuration & Deployment Drift
 - **Helm Secret Alignment:** Any new environment variable or secret referenced in `application.yml` or `bootstrap.yml` must be documented and mapped in `logistics-kubernetes` Helm charts before merging.
 - **Deprecation Grace Period:** Never immediately remove or rename existing fields from public DTOs. Annotate with `@Deprecated`, maintain backward-compatible getters, and allow downstream clients a deprecation window.
+
+## 10. Monetary Precision & Strict BigDecimal
+- **No Floating Point:** All delivery fee amounts, surge surcharges, and discounts must use `BigDecimal` and strict parser extensions (`asStrictBigDecimal()`). Never use `Double` or `Float` to avoid precision loss on cents.
+
+## 11. Revenue Protection on Upstream Nulls ("Free Money" Prevention)
+- **Fail-Safe Fallbacks:** If an upstream dependency (e.g. CDP customer loyalty or subscription state) returns null, times out, or errors, **never default to applying discounts or free delivery waivers**. Defaulting to free perks on missing data bleeds revenue. The fallback must always be standard fee.
+
+## 12. Dynamic Feature Flags over Static Properties
+- **Runtime Toggles:** Operational knobs, country rollouts, and kill-switches should use dynamic feature flags (FeaturesWithFriends) rather than static Helm/application properties that require full pod redeployments.
+
+## 13. Range Boundary Validation & Testing
+- **Input Validation:** Range filters and interval objects (`from..to`) must validate `from <= to` in an `init {}` block. Test suites must explicitly verify boundary edges (e.g. `0`, exact thresholds, and negative bounds).
