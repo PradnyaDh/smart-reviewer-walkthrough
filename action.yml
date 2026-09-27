@@ -6,8 +6,17 @@ inputs:
     required: true
     default: ${{ github.token }}
   anthropic-api-key:
-    description: "Anthropic API key (store as a repo/org secret, e.g. ANTHROPIC_API_KEY)."
+    description: "Anthropic API key, or the equivalent token for an Anthropic-compatible internal gateway (store as a repo/org secret, e.g. ANTHROPIC_API_KEY)."
     required: true
+  anthropic-base-url:
+    description: "Override the API base URL, e.g. to point at an internal LiteLLM gateway instead of https://api.anthropic.com. Must be reachable from the runner (not a localhost address from someone's laptop)."
+    required: false
+  cf-access-client-id:
+    description: "Optional Cloudflare Access service token client ID, if the gateway above is behind Cloudflare Zero Trust."
+    required: false
+  cf-access-client-secret:
+    description: "Optional Cloudflare Access service token client secret (pair with cf-access-client-id)."
+    required: false
   model:
     description: "Claude model id to use."
     required: false
@@ -34,5 +43,8 @@ runs:
       env:
         INPUT_GITHUB-TOKEN: ${{ inputs.github-token }}
         INPUT_ANTHROPIC-API-KEY: ${{ inputs.anthropic-api-key }}
+        INPUT_ANTHROPIC-BASE-URL: ${{ inputs.anthropic-base-url }}
+        INPUT_CF-ACCESS-CLIENT-ID: ${{ inputs.cf-access-client-id }}
+        INPUT_CF-ACCESS-CLIENT-SECRET: ${{ inputs.cf-access-client-secret }}
         INPUT_MODEL: ${{ inputs.model }}
         INPUT_MAX-DIFF-CHARS: ${{ inputs.max-diff-chars }}

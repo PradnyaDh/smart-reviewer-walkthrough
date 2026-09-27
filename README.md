@@ -32,6 +32,31 @@ no need to copy files around.
 (The workflow committed in *this* repo at `.github/workflows/smart-reviewer-walkthrough.yml` uses
 the local `./` path instead, so this repo dogfoods the action on its own PRs.)
 
+## Running locally against any repo
+
+`scripts/cli.mjs` runs the same logic (diff → model → format) outside of GitHub Actions
+entirely — useful for testing against a real PR before wiring up CI, or for one-off use
+without a workflow at all.
+
+```bash
+npm install
+
+# Dry run: prints the walkthrough, doesn't touch GitHub
+ANTHROPIC_API_KEY=sk-ant-... node scripts/cli.mjs owner/repo 123
+
+# Through an internal gateway, with a specific model
+ANTHROPIC_API_KEY=cloudflare ANTHROPIC_BASE_URL=http://localhost:36253 \
+  node scripts/cli.mjs owner/repo 123 --model gemini-3-5-flash
+
+# Actually post/update the comment on the PR
+ANTHROPIC_API_KEY=sk-ant-... node scripts/cli.mjs owner/repo 123 --post
+```
+
+It picks up your GitHub token from `gh auth token` automatically (falls back to
+`GH_TOKEN`/`GITHUB_TOKEN` env vars), so it works against any repo your `gh` CLI already
+has access to — no need for this action's own GitHub App/connector permissions.
+Run `node scripts/cli.mjs --help` for the full option list.
+
 ## Configuration
 
 All inputs are optional except the API key:
@@ -41,6 +66,8 @@ All inputs are optional except the API key:
 | `model` | `claude-sonnet-5` | Claude model id |
 | `max-diff-chars` | `60000` | Diff characters sent to the model before truncating (oversized files/diffs are noted, not silently dropped) |
 | `github-token` | `${{ github.token }}` | Override only if you need elevated permissions (e.g. to comment across forks) |
+| `anthropic-base-url` | `https://api.anthropic.com` | Point at an internal Anthropic-compatible gateway instead (e.g. an internal LiteLLM proxy). **Must be reachable from the GitHub Actions runner** — a `localhost` address from someone's laptop will not work from a cloud-hosted runner; you need the gateway's real network-reachable endpoint. If your org runs GitHub Actions on self-hosted runners inside the corporate network, that runner may reach the same internal address your local dev setup uses. |
+| `cf-access-client-id` / `cf-access-client-secret` | unset | Only needed if the gateway above sits behind Cloudflare Access (Zero Trust) and requires a service token for non-interactive callers like a CI job |
 
 ## Notes / limitations
 

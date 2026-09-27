@@ -1,19 +1,39 @@
-const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
+const DEFAULT_ANTHROPIC_BASE_URL = "https://api.anthropic.com";
 const ANTHROPIC_VERSION = "2023-06-01";
 
 /**
- * Calls the Claude API with a forced tool call so the response is guaranteed
- * to be the structured JSON we asked for, instead of freeform prose we'd
- * have to parse/regex out of a text reply.
+ * Calls the Claude API (or an Anthropic-compatible internal gateway) with a
+ * forced tool call so the response is guaranteed to be the structured JSON
+ * we asked for, instead of freeform prose we'd have to parse/regex out of a
+ * text reply.
+ *
+ * baseUrl/cfAccessClientId/cfAccessClientSecret let this point at a proxy
+ * (e.g. a LiteLLM gateway behind Cloudflare Access) instead of the public
+ * Anthropic API, without changing the request shape.
  */
-export async function generateWalkthrough({ apiKey, model, system, userPrompt, tool }) {
-  const res = await fetch(ANTHROPIC_API_URL, {
+export async function generateWalkthrough({
+  apiKey,
+  baseUrl = DEFAULT_ANTHROPIC_BASE_URL,
+  cfAccessClientId,
+  cfAccessClientSecret,
+  model,
+  system,
+  userPrompt,
+  tool,
+}) {
+  const headers = {
+    "content-type": "application/json",
+    "x-api-key": apiKey,
+    "anthropic-version": ANTHROPIC_VERSION,
+  };
+  if (cfAccessClientId && cfAccessClientSecret) {
+    headers["CF-Access-Client-Id"] = cfAccessClientId;
+    headers["CF-Access-Client-Secret"] = cfAccessClientSecret;
+  }
+
+  const res = await fetch(`${baseUrl.replace(/\/$/, "")}/v1/messages`, {
     method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": ANTHROPIC_VERSION,
-    },
+    headers,
     body: JSON.stringify({
       model,
       max_tokens: 4096,
@@ -26,7 +46,7 @@ export async function generateWalkthrough({ apiKey, model, system, userPrompt, t
 
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(`Anthropic API error ${res.status}: ${body.slice(0, 500)}`);
+    throw new Error(`Anthropic-compatible API error ${res.status} (${baseUrl}): ${body.slice(0, 500)}`);
   }
 
   const data = await res.json();

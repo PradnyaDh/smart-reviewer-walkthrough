@@ -23,3 +23,9 @@ jobs:
       - uses: PradnyaDh/smart-reviewer-walkthrough@main
         with:
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Only needed if routing through an internal gateway instead of
+          # https://api.anthropic.com directly — omit anthropic-base-url
+          # (and the two cf-access-* lines) if you're using a direct key.
+          anthropic-base-url: ${{ secrets.ANTHROPIC_BASE_URL }}
+          cf-access-client-id: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          cf-access-client-secret: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
